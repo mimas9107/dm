@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>來電送 - 顧客訂單追蹤</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brick: {
+              DEFAULT: '#C84B31',
+              dark: '#A53B24',
+              light: '#FDF4F2'
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F8F6F4;
+      font-family: "Noto Sans TC", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
+
+  <!-- ========================================================= -->
+  <!-- 頁面 4：顧客訂單追蹤頁面 (Screen 4 - 顧客追蹤 RWD 手機/平板適應) -->
+  <!-- ========================================================= -->
+  <div id="page-user-track" class="min-h-screen flex flex-col justify-between pb-10 md:pb-8">
+    
+    <!-- 頂部品牌與頁面導覽列 (嚴格使用：大 text-xl、中 text-base、小 text-xs) -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 shadow-xs">
+      <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 min-h-16 md:min-h-20 py-2.5 md:py-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        
+        <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
+        <a href="code_artifact.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
+          <img src="CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
+          <div class="shrink-0 whitespace-nowrap">
+            <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
+            <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">CALL & DELIVER</span>
+          </div>
+        </a>
+
+        <!-- 多筆訂單單號切換器 (小螢幕空間不足時自動折至下一行，不切斷) -->
+        <div class="w-full sm:w-auto flex flex-wrap items-center justify-end gap-1.5 md:gap-2 border-t border-stone-100 sm:border-t-0 pt-2 sm:pt-0">
+          <span class="text-xs text-stone-500 font-bold whitespace-nowrap">單號：</span>
+          <div id="user-order-tabs" class="flex flex-wrap items-center gap-1.5 md:gap-2">
+            <!-- 動態渲染單號切換按鈕 -->
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 顧客追蹤主視覺容器 (手機單欄 max-w-xl / 平板與桌面寬版 md:max-w-4xl lg:max-w-5xl) -->
+    <main class="flex-1 max-w-xl md:max-w-4xl lg:max-w-5xl w-full mx-auto px-4 md:px-6 py-5 md:py-8 flex flex-col justify-center">
+      
+      <!-- 頂部副標列 (小 text-xs) -->
+      <div class="flex items-center justify-between mb-2.5 md:mb-3.5 px-1">
+        <h2 class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
+          <i data-lucide="radar" class="w-3.5 h-3.5 text-brick"></i> 訂單即時配送進度 (點擊節點可切換階段)
+        </h2>
+        <span id="track-stage-badge" class="text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md">
+          店家接單
+        </span>
+      </div>
+
+      <!-- 顧客追蹤主卡片 (對應手繪稿外框) -->
+      <div class="bg-white rounded-3xl overflow-hidden shadow-xl shadow-stone-200/70 border border-stone-200/80 p-6 sm:p-8 md:p-10 flex flex-col gap-7 md:gap-9">
+        
+        <!-- 當前追蹤的店家與單號提示列 -->
+        <div class="flex items-center justify-between border-b border-stone-100 pb-3.5 -mb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brick"></span>
+            <span id="active-order-store" class="text-base font-black text-stone-900">禾風堂手作便當</span>
+          </div>
+          <span id="track-order-id" class="text-xs font-mono font-bold text-brick bg-brick-light px-3 py-1 rounded-full border border-red-200/60">
+            單號 #101
+          </span>
+        </div>
+
+        <!-- 1. 手繪稿頂部三階段進度條： ◯ ── ◯ ── ◯ (店家接單 / 已製作完成 / 已送達) -->
+        <div class="pt-2 md:pt-3">
+          <div class="relative flex items-center justify-between max-w-2xl mx-auto px-2 sm:px-6">
+            
+            <!-- 背景底線與動態進度填色線 (以第一個與第三個圓心對齊) -->
+            <div class="absolute left-9 right-9 sm:left-13 sm:right-13 md:left-14 md:right-14 top-7 md:top-8 -translate-y-1/2 h-1.5 bg-stone-200 rounded-full z-0 overflow-hidden">
+              <div id="stepper-progress-bar" class="h-full bg-brick rounded-full transition-all duration-500" style="width: 0%;"></div>
+            </div>
+
+            <!-- 節點 1：店家接單 -->
+            <button onclick="setTrackStep(0)" class="relative z-10 flex flex-col items-center gap-2.5 group focus:outline-none cursor-pointer">
+              <div id="step-circle-0" class="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-md">
+                <i data-lucide="clipboard-check" class="w-6 h-6 md:w-7 md:h-7"></i>
+              </div>
+              <span id="step-label-0" class="text-base font-black tracking-tight transition-colors duration-300">
+                店家接單
+              </span>
+            </button>
+
+            <!-- 節點 2：已製作完成 -->
+            <button onclick="setTrackStep(1)" class="relative z-10 flex flex-col items-center gap-2.5 group focus:outline-none cursor-pointer">
+              <div id="step-circle-1" class="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300">
+                <i data-lucide="utensils-crossed" class="w-6 h-6 md:w-7 md:h-7"></i>
+              </div>
+              <span id="step-label-1" class="text-base font-black tracking-tight transition-colors duration-300">
+                已製作完成
+              </span>
+            </button>
+
+            <!-- 節點 3：已送達 -->
+            <button onclick="setTrackStep(2)" class="relative z-10 flex flex-col items-center gap-2.5 group focus:outline-none cursor-pointer">
+              <div id="step-circle-2" class="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300">
+                <i data-lucide="package-check" class="w-6 h-6 md:w-7 md:h-7"></i>
+              </div>
+              <span id="step-label-2" class="text-base font-black tracking-tight transition-colors duration-300">
+                已送達
+              </span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- 2. RWD 內容區：手機由上而下單欄 / 平板以上 (md:grid-cols-12) 左右雙欄配置 -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 items-start">
+          
+          <!-- 左欄 (平板占 6/12)：手繪稿中央核心「預計送達時間」與「回首頁」按鈕 -->
+          <div class="md:col-span-6 flex flex-col gap-5">
+            <div class="bg-brick-light/70 border border-red-200/70 rounded-2xl p-6 md:p-8 text-center flex flex-col items-center justify-center gap-2">
+              <div class="flex items-center gap-1.5 text-xs font-bold text-stone-600">
+                <i data-lucide="clock" class="w-4 h-4 text-brick"></i>
+                <span id="eta-title">預計送達時間</span>
+              </div>
+              <p id="eta-time" class="text-xl font-black text-brick tracking-tight mt-0.5">
+                12:15 前送達
+              </p>
+              <p id="eta-desc" class="text-xs text-stone-600 mt-0.5">
+                店家已確認您的訂單，正用心準備餐點中
+              </p>
+            </div>
+
+            <!-- 手繪稿底部按鈕：回首頁 (平板時位於左欄預計送達時間正下方，手機時維持在最底部) -->
+            <div class="hidden md:flex justify-center">
+              <a href="code_artifact.html" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                <span>回首頁</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 右欄 (平板占 6/12)：預設折疊的訂單摘要區塊 (點擊展開/收合) -->
+          <div class="md:col-span-6 flex flex-col gap-5">
+            <div class="border border-stone-200/80 rounded-2xl overflow-hidden bg-stone-50/70">
+              <button onclick="toggleOrderSummary()" class="w-full px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between text-xs font-bold text-stone-700 hover:bg-stone-100/80 transition cursor-pointer">
+                <span class="flex items-center gap-2">
+                  <i data-lucide="receipt" class="w-4 h-4 text-brick"></i>
+                  <span>查看本次訂單明細（<span id="summary-store-brief">禾風堂手作便當</span>）</span>
+                </span>
+                <i id="summary-chevron" data-lucide="chevron-down" class="w-4 h-4 text-stone-500 transition-transform duration-300"></i>
+              </button>
+
+              <!-- 折疊內容 (預設 hidden) -->
+              <div id="order-summary-panel" class="hidden px-4 md:px-5 pb-4 md:pb-5 pt-3 border-t border-stone-200/70 text-xs space-y-2.5 bg-white">
+                <div class="flex justify-between gap-2">
+                  <span class="text-stone-500 font-semibold shrink-0">訂購店家</span>
+                  <span id="summary-store-name" class="font-bold text-stone-900 text-right">禾風堂手作便當</span>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <span class="text-stone-500 font-semibold shrink-0">收件地址</span>
+                  <span id="summary-address" class="font-bold text-stone-900 text-right">台北市信義區松高路 11 號 5 樓</span>
+                </div>
+                <div class="flex justify-between gap-2">
+                  <span class="text-stone-500 font-semibold shrink-0">收件人</span>
+                  <span id="summary-customer" class="font-bold text-stone-900 text-right">王小明 / 0912-345-678</span>
+                </div>
+                <div class="pt-2 border-t border-stone-100">
+                  <span class="text-stone-500 font-semibold block mb-1.5">餐點品項 / 數量</span>
+                  <div id="summary-items-list" class="space-y-1.5 text-stone-800 font-bold">
+                    <!-- 動態渲染餐點 -->
+                  </div>
+                </div>
+                <div class="pt-2.5 border-t border-stone-200/80 flex items-center justify-between">
+                  <span class="font-bold text-stone-600">總計金額（免外送費）</span>
+                  <span id="summary-total" class="text-base font-black text-brick font-mono">NT$ 375</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 手機版底部按鈕：回首頁 (md 以上隱藏，由左欄顯示) -->
+            <div class="pt-1 flex md:hidden justify-center">
+              <a href="code_artifact.html" class="w-full sm:w-64 bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-3.5 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                <span>回首頁</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 頁尾 (小 text-xs) -->
+    <footer class="w-full text-center py-3 text-xs text-stone-600">
+      <p>© 來電送 • 準時專送</p>
+    </footer>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JavaScript: 多筆訂單切換、三階段進度與訂單摘要渲染        -->
+  <!-- ========================================================= -->
+  <script>
+    // 顧客的多筆訂單清單 (每張訂單各自維護獨立的 step 進度階段 0: 店家接單, 1: 已製作完成, 2: 已送達)
+    const userOrdersData = [
+      {
+        orderId: "#101",
+        storeName: "禾風堂手作便當",
+        deliverBy: "12:15",
+        address: "台北市信義區松高路 11 號 5 樓",
+        customerName: "王小明",
+        customerPhone: "0912-345-678",
+        step: 0,
+        items: [
+          { name: "秘傳酥炸排骨便當", qty: 2, price: 120 },
+          { name: "蜜汁香烤大雞腿飯", qty: 1, price: 135 }
+        ]
+      },
+      {
+        orderId: "#102",
+        storeName: "築地漁火日式定食",
+        deliverBy: "12:30",
+        address: "台北市信義區松高路 11 號 5 樓",
+        customerName: "王小明",
+        customerPhone: "0912-345-678",
+        step: 1,
+        items: [
+          { name: "極上炙燒鮭魚腹丼", qty: 2, price: 180 },
+          { name: "和風醬烤鯖魚定食", qty: 2, price: 160 }
+        ]
+      },
+      {
+        orderId: "#103",
+        storeName: "青嵐健康水煮餐",
+        deliverBy: "12:00",
+        address: "台北市信義區松高路 11 號 5 樓",
+        customerName: "王小明",
+        customerPhone: "0912-345-678",
+        step: 2,
+        items: [
+          { name: "義式香草舒肥雞胸餐", qty: 3, price: 130 },
+          { name: "水煮嫩煎板腱牛便當", qty: 1, price: 165 }
+        ]
+      }
+    ];
+
+    // 三階段狀態定義 (對應手繪稿：店家接單 -> 已製作完成 -> 已送達)
+    const trackStages = [
+      {
+        label: "店家接單",
+        etaTitle: "預計送達時間",
+        getEtaText: (time) => `${time} 前送達`,
+        desc: "店家已確認您的訂單，正用心準備餐點中"
+      },
+      {
+        label: "已製作完成",
+        etaTitle: "預計送達時間",
+        getEtaText: (time) => `${time} 前送達（外送員配送中）`,
+        desc: "餐點已製作完成並由專人出發配送，請留意來電"
+      },
+      {
+        label: "已送達",
+        etaTitle: "實際送達狀態",
+        getEtaText: (time) => `已於 ${time} 準時送達`,
+        desc: "餐點已送達指定地址，祝您用餐愉快！"
+      }
+    ];
+
+    let currentOrderIdx = 0;
+    let summaryExpanded = false;
+
+    function initTrackPage() {
+      // 若使用者剛從 code_artifact.html 下單跳轉，將最新下單資料同步進對應單號（或新增為第一筆）
+      try {
+        const saved = localStorage.getItem('laidiansong_latest_order');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.items && parsed.items.length > 0) {
+            const matchIdx = userOrdersData.findIndex(o => o.orderId === parsed.orderId || o.storeName === parsed.storeName);
+            if (matchIdx !== -1) {
+              userOrdersData[matchIdx] = {
+                ...userOrdersData[matchIdx],
+                ...parsed,
+                step: typeof parsed.step === 'number' ? parsed.step : 0
+              };
+              currentOrderIdx = matchIdx;
+            } else {
+              userOrdersData.unshift({
+                ...userOrdersData[0],
+                ...parsed,
+                step: 0
+              });
+              currentOrderIdx = 0;
+            }
+          }
+        }
+      } catch (e) {
+        // 忽略 localStorage 讀取限制
+      }
+
+      renderOrderTabs();
+      renderActiveOrder();
+    }
+
+    // 渲染頂部多筆訂單單號切換按鈕
+    function renderOrderTabs() {
+      const container = document.getElementById('user-order-tabs');
+      container.innerHTML = userOrdersData.map((order, idx) => {
+        const isActive = idx === currentOrderIdx;
+        const btnClass = isActive
+          ? "px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95 cursor-pointer"
+          : "px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95 cursor-pointer";
+        return `<button onclick="switchUserOrder(${idx})" class="${btnClass}">${order.orderId}</button>`;
+      }).join('');
+    }
+
+    // 切換查看不同張訂單
+    function switchUserOrder(idx) {
+      currentOrderIdx = idx;
+      renderOrderTabs();
+      renderActiveOrder();
+    }
+
+    // 渲染當前選中訂單的進度條、預計送達時間與折疊明細
+    function renderActiveOrder() {
+      const activeOrder = userOrdersData[currentOrderIdx];
+      document.getElementById('active-order-store').innerText = activeOrder.storeName;
+      document.getElementById('track-order-id').innerText = `單號 ${activeOrder.orderId}`;
+      document.getElementById('summary-store-brief').innerText = activeOrder.storeName;
+      document.getElementById('summary-store-name').innerText = activeOrder.storeName;
+      document.getElementById('summary-address').innerText = activeOrder.address;
+      document.getElementById('summary-customer').innerText = `${activeOrder.customerName} / ${activeOrder.customerPhone}`;
+
+      let total = 0;
+      const itemsHtml = activeOrder.items.map(item => {
+        const sub = item.qty * item.price;
+        total += sub;
+        return `
+          <div class="flex items-center justify-between">
+            <span>${item.name} × ${item.qty}</span>
+            <span class="font-mono text-stone-600">NT$ ${sub}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('summary-items-list').innerHTML = itemsHtml;
+      document.getElementById('summary-total').innerText = `NT$ ${total}`;
+
+      setTrackStep(activeOrder.step);
+    }
+
+    // 切換當前訂單的三階段進度
+    function setTrackStep(stepIdx) {
+      const activeOrder = userOrdersData[currentOrderIdx];
+      activeOrder.step = stepIdx;
+      const stage = trackStages[stepIdx];
+
+      // 更新右上角階段標籤
+      const badge = document.getElementById('track-stage-badge');
+      badge.innerText = stage.label;
+      if (stepIdx === 2) {
+        badge.className = "text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200";
+      } else {
+        badge.className = "text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md border border-red-200/60";
+      }
+
+      // 更新進度條填色寬度 (0% -> 50% -> 100%)
+      const progressBar = document.getElementById('stepper-progress-bar');
+      if (stepIdx === 0) {
+        progressBar.style.width = '0%';
+      } else if (stepIdx === 1) {
+        progressBar.style.width = '50%';
+      } else {
+        progressBar.style.width = '100%';
+      }
+
+      // 更新 3 個圓圈節點與文字樣式 (支援 RWD 手機 w-14 / 平板 md:w-16)
+      for (let i = 0; i < 3; i++) {
+        const circle = document.getElementById(`step-circle-${i}`);
+        const label = document.getElementById(`step-label-${i}`);
+
+        if (i < stepIdx) {
+          // 已完成階段
+          circle.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-brick text-white border-2 border-brick flex items-center justify-center transition-all duration-300 shadow-sm";
+          label.className = "text-base font-black tracking-tight text-brick transition-colors duration-300";
+        } else if (i === stepIdx) {
+          // 當前進行中階段
+          circle.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-brick text-white border-4 border-red-200 flex items-center justify-center transition-all duration-300 shadow-lg shadow-red-950/20 scale-105";
+          label.className = "text-base font-black tracking-tight text-brick transition-colors duration-300";
+        } else {
+          // 尚未到達階段
+          circle.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-white text-stone-400 border-2 border-stone-300 flex items-center justify-center transition-all duration-300 hover:border-stone-400";
+          label.className = "text-base font-bold tracking-tight text-stone-400 transition-colors duration-300";
+        }
+      }
+
+      // 更新預計送達時間區塊
+      document.getElementById('eta-title').innerText = stage.etaTitle;
+      document.getElementById('eta-time').innerText = stage.getEtaText(activeOrder.deliverBy || "12:15");
+      document.getElementById('eta-desc').innerText = stage.desc;
+
+      lucide.createIcons();
+    }
+
+    function toggleOrderSummary() {
+      summaryExpanded = !summaryExpanded;
+      const panel = document.getElementById('order-summary-panel');
+      const chevron = document.getElementById('summary-chevron');
+      if (summaryExpanded) {
+        panel.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+      } else {
+        panel.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      }
+    }
+
+    window.onload = initTrackPage;
+  </script>
+</body>
+</html>
