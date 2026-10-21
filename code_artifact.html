@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>來電送 - 首頁與店家介紹</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brick: {
+              DEFAULT: '#C84B31',
+              dark: '#A53B24',
+              light: '#FDF4F2'
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F8F6F4;
+      font-family: "Noto Sans TC", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* 外送範圍限制斜線遮罩 (對應白板手稿 mask) */
+    .out-of-range-mask {
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(200, 75, 49, 0.08),
+        rgba(200, 75, 49, 0.08) 12px,
+        rgba(255, 255, 255, 0.92) 12px,
+        rgba(255, 255, 255, 0.92) 24px
+      );
+      backdrop-filter: blur(3px);
+    }
+  </style>
+</head>
+<body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
+
+  <!-- ========================================================= -->
+  <!-- 頁面 1：首頁 (Screen 1 - Homepage)                        -->
+  <!-- ========================================================= -->
+  <div id="page-home" class="min-h-screen flex flex-col justify-between transition-opacity duration-300">
+    
+    <!-- 頂部 Logo 區 (嚴格使用：大 text-xl、小 text-xs) -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 shadow-xs">
+      <div class="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
+        
+        <!-- 品牌專屬向量 Logo (白板設計: 磚紅底 #C84B31 / 閃電箭頭「送」字) -->
+        <div class="flex items-center gap-2.5 cursor-pointer select-none" onclick="goToHome()">
+          <div class="w-11 h-11 rounded-2xl bg-brick p-1.5 flex items-center justify-center shadow-md shadow-red-950/15 shrink-0">
+            <svg viewBox="0 0 100 100" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- 閃電部首「辶」+ 向右上方送達箭頭 -->
+              <path d="M 38 18 
+                       L 24 38 
+                       L 34 38 
+                       L 20 62 
+                       C 22 74, 34 76, 44 75 
+                       L 68 75 
+                       L 68 67 
+                       L 82 77 
+                       L 68 87 
+                       L 68 79 
+                       C 42 79, 14 77, 12 58 
+                       L 24 34 
+                       L 16 34 
+                       Z" 
+                    fill="#FFFFFF" />
+              <!-- 「关」字筆劃結構 -->
+              <path d="M 44 26 L 49 32" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 68 25 L 63 32" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 40 38 L 72 38" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 36 49 L 77 49" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+              <path d="M 56 49 Q 53 62 42 68" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 57 51 Q 63 60 74 67" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
+            <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">CALL & DELIVER</span>
+          </div>
+        </div>
+
+        <!-- 店家接單頁切換入口 (目前預設隱藏，移除 hidden 即可顯示) -->
+        <a id="nav-store-order" href="order_accept.html" class="hidden text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1.5 rounded-xl font-bold border border-stone-200/80 items-center gap-1.5 transition active:scale-95">
+          <i data-lucide="clipboard-list" class="w-3.5 h-3.5 text-brick"></i>
+          <span>店家接單</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- 中央輪播主視覺區 -->
+    <main class="flex-1 max-w-xl w-full mx-auto px-4 py-5 flex flex-col justify-center">
+      
+      <!-- 頂部副標列 (小 text-xs) -->
+      <div class="flex items-center justify-between mb-2.5 px-1">
+        <h2 class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-brick"></i> 今日熱門推薦 (點擊進入店家)
+        </h2>
+        <span id="carousel-indicator" class="text-xs font-mono font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md">1 / 3</span>
+      </div>
+
+      <!-- 輪播卡片本體 (手機版高比例大圖置頂 >55%) -->
+      <div class="relative bg-white rounded-3xl overflow-hidden shadow-xl shadow-stone-200/70 border border-stone-200/80 flex flex-col">
+        
+        <!-- 圖片容器 (手機端高比例置頂，點擊前往店家介紹頁) -->
+        <div class="relative h-64 sm:h-72 w-full overflow-hidden bg-stone-900 cursor-pointer" onclick="openCurrentRestaurant()">
+          <img id="carousel-img" src="" alt="菜色照片" class="w-full h-full object-cover transition-all duration-700 hover:scale-105">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/25 pointer-events-none"></div>
+          
+          <!-- 標籤 (小 text-xs) -->
+          <span id="carousel-tag" class="absolute top-3.5 left-3.5 bg-brick text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
+            人氣招牌
+          </span>
+
+          <!-- 左右快速切換按鈕 -->
+          <div class="absolute inset-x-3 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-10">
+            <button onclick="event.stopPropagation(); prevSlide();" class="pointer-events-auto p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-xs transition active:scale-90" aria-label="上一張">
+              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <button onclick="event.stopPropagation(); nextSlide();" class="pointer-events-auto p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-xs transition active:scale-90" aria-label="下一張">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- 圖片覆蓋菜名 (大 text-xl) -->
+          <div class="absolute bottom-3 left-4 right-4 text-white pointer-events-none">
+            <p id="carousel-dish" class="text-xl font-black drop-shadow-sm truncate"></p>
+          </div>
+        </div>
+
+        <!-- 資訊與按鈕內容 -->
+        <div class="p-4 flex flex-col gap-3">
+          <div>
+            <!-- 店名 (中 text-base) 與 起送價 (大 text-xl) -->
+            <div class="flex items-center justify-between cursor-pointer" onclick="openCurrentRestaurant()">
+              <h3 id="carousel-title" class="text-base font-black text-stone-900 tracking-tight hover:text-brick transition"></h3>
+              <span id="carousel-price" class="text-xl font-black text-brick font-mono"></span>
+            </div>
+
+            <!-- 精簡菜色介紹短句 (小 text-xs) -->
+            <p id="carousel-desc" class="text-xs text-stone-600 mt-1 line-clamp-1"></p>
+
+            <!-- 基本資訊指標 (小 text-xs) -->
+            <div class="flex items-center gap-2 mt-2.5 text-xs text-stone-600">
+              <span class="flex items-center gap-1 font-bold text-amber-600">
+                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-500 text-amber-500"></i>
+                <span id="carousel-rating">4.9</span>
+              </span>
+              <span>•</span>
+              <span id="carousel-time" class="flex items-center gap-1 font-medium">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i> 20-30 分
+              </span>
+              <span>•</span>
+              <span id="carousel-min" class="bg-stone-100 text-stone-700 px-2 py-0.5 rounded font-bold"></span>
+            </div>
+          </div>
+
+          <!-- 動作按鈕：無縫跳轉店家頁 (中 text-base) -->
+          <div class="pt-1">
+            <button onclick="openCurrentRestaurant()" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-bold py-3 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
+              <i data-lucide="utensils" class="w-4 h-4"></i> 查看店家與菜單
+            </button>
+          </div>
+        </div>
+
+        <!-- 底部圓點指示條 -->
+        <div class="flex gap-1.5 px-4 pb-3 justify-center">
+          <button onclick="goToSlide(0)" class="h-1.5 rounded-full transition-all duration-300 indicator-bar w-8 bg-brick"></button>
+          <button onclick="goToSlide(1)" class="h-1.5 rounded-full transition-all duration-300 indicator-bar w-3 bg-stone-200"></button>
+          <button onclick="goToSlide(2)" class="h-1.5 rounded-full transition-all duration-300 indicator-bar w-3 bg-stone-200"></button>
+        </div>
+      </div>
+    </main>
+
+    <!-- 頁尾 (小 text-xs) -->
+    <footer class="w-full text-center py-3 text-xs text-stone-600">
+      <p>© 來電送 • 準時專送</p>
+    </footer>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 頁面 2：店家介紹頁面 (Screen 2 - 店家介紹與菜單)          -->
+  <!-- ========================================================= -->
+  <div id="page-detail" class="hidden min-h-screen flex flex-col justify-between bg-stone-50 pb-24 transition-opacity duration-300">
+    
+    <!-- 頂部導航 (左側返回、標題、右上角外送車含 Badge) -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200 sticky top-0 z-40">
+      <div class="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
+        <button onclick="goToHome()" class="w-10 h-10 rounded-xl bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-700 transition active:scale-95">
+          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+        </button>
+        <span class="text-base font-bold text-stone-800 tracking-wide">店家介紹與菜單</span>
+        <button onclick="focusCartBottom()" class="relative w-10 h-10 rounded-xl bg-brick-light flex items-center justify-center text-brick transition active:scale-95">
+          <i data-lucide="truck" class="w-5 h-5"></i>
+          <span id="detail-cart-badge" class="hidden absolute -top-1 -right-1 bg-brick text-white text-xs w-5 h-5 font-bold rounded-full flex items-center justify-center shadow-xs">0</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 店家主體內容容器 -->
+    <main class="max-w-xl w-full mx-auto px-4 py-4 flex-1">
+      <div class="relative bg-white rounded-3xl overflow-hidden shadow-md border border-stone-100 mb-4">
+        
+        <!-- Hero 店家形象大圖 -->
+        <div class="relative h-48 sm:h-56 w-full">
+          <img id="detail-hero-img" src="" alt="店家大圖" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+          
+          <div class="absolute bottom-3 left-4 right-4 text-white">
+            <span id="detail-tag" class="text-xs font-bold bg-brick px-2.5 py-0.5 rounded-full inline-block mb-1">精選餐廳</span>
+            <h1 id="detail-name" class="text-xl font-black tracking-tight drop-shadow-sm"></h1>
+          </div>
+        </div>
+
+        <!-- 店家基本資訊與地址 (嚴格使用：小 text-xs) -->
+        <div class="p-4 border-b border-stone-100">
+          
+          <!-- 門市地址欄位 -->
+          <div class="flex items-start gap-2 text-xs text-stone-700 mb-2.5 bg-stone-50 p-2.5 rounded-xl border border-stone-200/60">
+            <i data-lucide="map-pin" class="w-4 h-4 text-brick shrink-0 mt-0.5"></i>
+            <div class="flex-1 min-w-0">
+              <span class="text-stone-500 font-semibold block text-xs">店家門市地址</span>
+              <span id="detail-address" class="font-bold text-stone-900 block mt-0.5"></span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-stone-600 mb-3">
+            <span class="flex items-center gap-1 text-amber-600 font-bold">
+              <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-500 text-amber-500"></i>
+              <span id="detail-rating">4.9</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-stone-600"></i>
+              <span id="detail-hours">10:30 - 13:30</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <i data-lucide="phone" class="w-3.5 h-3.5 text-stone-600"></i>
+              <span id="detail-phone">02-2398-1122</span>
+            </span>
+          </div>
+
+          <!-- 最低外送要求標籤 (小 text-xs) -->
+          <div class="bg-brick-light/80 border border-red-200/60 rounded-xl p-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-brick text-white flex items-center justify-center shrink-0 shadow-xs">
+                <i data-lucide="package-check" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-stone-800 block">最低外送數量</span>
+                <span id="detail-min-text" class="text-xs text-brick font-bold">滿 3 份送</span>
+              </div>
+            </div>
+            <span class="text-xs bg-white text-stone-600 px-2.5 py-1 rounded-md border border-stone-200 font-bold">免外送費</span>
+          </div>
+        </div>
+
+        <!-- 外送範圍限制遮罩 (手繪稿中的【外送範圍限制 - 客人無法下單 mask】) -->
+        <div id="range-mask" class="hidden absolute inset-0 z-20 out-of-range-mask flex flex-col items-center justify-center p-6 text-center">
+          <div class="bg-white/95 p-5 rounded-2xl shadow-2xl border-2 border-brick max-w-sm w-full mx-auto">
+            <div class="w-10 h-10 rounded-full bg-red-100 text-brick flex items-center justify-center mx-auto mb-2.5">
+              <i data-lucide="map-pin-off" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-xl font-black text-stone-900 mb-1">超出外送範圍</h3>
+            <p class="text-xs text-stone-600 mb-3 leading-relaxed">
+              您的位置超出本店午餐外送半徑，目前無法提供送餐服務。
+            </p>
+            <button onclick="toggleRangeSimulation()" class="w-full bg-stone-800 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-black transition active:scale-95">
+              切換回範圍內測試
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 菜單列表 (小 text-xs、中 text-base、大 text-xl) -->
+      <div class="mb-4">
+        <h2 class="text-xs font-bold text-stone-600 mb-2.5 flex items-center gap-1.5">
+          <i data-lucide="book-open" class="w-3.5 h-3.5 text-brick"></i> 今日供應菜單
+        </h2>
+        <div id="detail-menu-list" class="space-y-2.5">
+          <!-- 菜單卡片動態渲染於此 -->
+        </div>
+      </div>
+    </main>
+
+    <!-- 底部固定 Buy 欄 (對應草圖底部 🛺 buy 按鈕) -->
+    <div class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 z-30 shadow-lg">
+      <div class="max-w-xl mx-auto flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-11 h-11 rounded-2xl bg-brick-light flex items-center justify-center text-brick">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-xs text-stone-600">已選 <span id="cart-count" class="font-bold text-brick">0</span> 份</div>
+            <div class="text-xl font-black text-stone-900 font-mono">NT$ <span id="cart-price">0</span></div>
+          </div>
+        </div>
+
+        <button id="btn-buy" onclick="handleBuyClick()" class="flex-1 bg-brick hover:bg-brick-dark text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 active:scale-[0.98] transition">
+          <i data-lucide="phone-outgoing" class="w-4 h-4"></i>
+          <span id="btn-buy-text">立即來電訂餐</span>
+        </button>
+      </div>
+      <!-- 起送數量提示條 -->
+      <div id="cart-warning" class="max-w-xl mx-auto text-center text-xs text-amber-700 font-bold pt-1 hidden">
+        ⚠️ 尚未達起送門檻（還差 <span id="need-more-count">0</span> 份）
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 來電下單確認彈窗 (字體：大 text-xl、中 text-base、小 text-xs) -->
+  <!-- ========================================================= -->
+  <div id="modal-call" class="fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 text-center shadow-2xl relative">
+      <div class="w-12 h-12 bg-brick-light text-brick rounded-2xl flex items-center justify-center mx-auto mb-3">
+        <i data-lucide="phone-call" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-xl font-black text-stone-900">確認撥打訂餐？</h3>
+      <p id="modal-desc" class="text-xs text-stone-600 my-2 leading-relaxed bg-stone-50 p-2.5 rounded-xl border border-stone-100 text-left"></p>
+      
+      <p class="text-xs text-amber-600 font-bold mb-4 bg-amber-50 py-1 px-2.5 rounded-lg border border-amber-100">
+        📌 提醒：送出即不可改單/棄單。
+      </p>
+
+      <div class="flex gap-2">
+        <button onclick="closeModal()" class="flex-1 py-2.5 text-stone-600 bg-stone-100 hover:bg-stone-200 font-bold rounded-xl text-base transition active:scale-95">
+          取消
+        </button>
+        <a id="modal-call-link" href="#" class="flex-1 py-2.5 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+          <i data-lucide="phone" class="w-4 h-4"></i> 撥號
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JavaScript: 雙頁路由切換、輪播與購物車狀態管理               -->
+  <!-- ========================================================= -->
+  <script>
+    // 3 家精選午餐餐廳完整資料庫 (含門市地址)
+    const restaurantsData = [
+      {
+        id: 1,
+        name: "禾風堂手作便當",
+        tag: "人氣招牌",
+        address: "台北市信義區忠孝東路五段 68 號 B2",
+        heroImg: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1000&q=80",
+        phone: "02-2398-1122",
+        hours: "10:30 - 13:30",
+        rating: "4.9",
+        deliverTime: "20-30 分",
+        minQty: 3,
+        minQtyText: "滿 3 份送",
+        desc: "現炸酥脆厚切黑豬排，搭配當季三色蔬菜。",
+        dish: "秘傳酥炸排骨便當",
+        price: "NT$ 120 起",
+        menu: [
+          { id: 101, name: "秘傳酥炸排骨便當", price: 120, desc: "溫體黑豬厚切排骨，獨家漢方醃漬。", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80" },
+          { id: 102, name: "蜜汁香烤大雞腿飯", price: 135, desc: "慢火烘烤蜜汁封頂，外酥肉嫩。", img: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=400&q=80" },
+          { id: 103, name: "古法滷香厚切爌肉飯", price: 115, desc: "肥瘦適中三層肉，慢燉入味。", img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=400&q=80" }
+        ]
+      },
+      {
+        id: 2,
+        name: "築地漁火日式定食",
+        tag: "主廚特製",
+        address: "台北市大安區敦化南路一段 161 巷 12 號",
+        heroImg: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=1000&q=80",
+        phone: "02-2771-3344",
+        hours: "11:00 - 14:00",
+        rating: "4.8",
+        deliverTime: "25-35 分",
+        minQty: 2,
+        minQtyText: "滿 2 份送",
+        desc: "炙燒生食級鮭魚腹，搭配手作玉子燒。",
+        dish: "極上炙燒鮭魚丼",
+        price: "NT$ 180 起",
+        menu: [
+          { id: 201, name: "極上炙燒鮭魚腹丼", price: 180, desc: "微炙挪威鮭魚，佐特調和風醬油。", img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80" },
+          { id: 202, name: "和風醬烤鯖魚定食", price: 160, desc: "油脂豐富肉質細嫩，附味噌湯。", img: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56?auto=format&fit=crop&w=400&q=80" },
+          { id: 203, name: "日式親子丼定食", price: 140, desc: "鮮嫩雞腿肉配半熟蛋液，香甜暖胃。", img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80" }
+        ]
+      },
+      {
+        id: 3,
+        name: "青嵐健康水煮餐",
+        tag: "輕盈低卡",
+        address: "台北市松山區民生東路三段 130 巷 8 號",
+        heroImg: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1000&q=80",
+        phone: "02-8765-4321",
+        hours: "10:30 - 13:00",
+        rating: "4.7",
+        deliverTime: "15-25 分",
+        minQty: 2,
+        minQtyText: "滿 2 份送",
+        desc: "低溫舒肥黑椒嫩雞胸，佐紫米藜麥時蔬。",
+        dish: "香草舒肥雞胸餐",
+        price: "NT$ 130 起",
+        menu: [
+          { id: 301, name: "義式香草舒肥雞胸餐", price: 130, desc: "低溫舒肥嫩雞胸，配紫米藜麥。", img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80" },
+          { id: 302, name: "水煮嫩煎板腱牛便當", price: 165, desc: "天然海鹽提味，豐富優質蛋白質。", img: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80" },
+          { id: 303, name: "雙倍時蔬高纖水煮餐", price: 110, desc: "無肉蔬食首選，五彩時蔬搭烤地瓜。", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80" }
+        ]
+      }
+    ];
+
+    let currentSlide = 0;
+    let carouselTimer = null;
+    let currentRestaurant = restaurantsData[0];
+    let cart = {}; // { itemId: quantity }
+    let isOutOfRange = false; // 外送範圍限制模擬
+
+    // 應用程式初始化
+    function initApp() {
+      lucide.createIcons();
+      updateCarousel();
+      startCarousel();
+    }
+
+    // 輪播內容更新
+    function updateCarousel() {
+      const item = restaurantsData[currentSlide];
+      document.getElementById('carousel-img').src = item.heroImg;
+      document.getElementById('carousel-tag').innerText = item.tag;
+      document.getElementById('carousel-title').innerText = item.name;
+      document.getElementById('carousel-dish').innerText = item.dish;
+      document.getElementById('carousel-desc').innerText = item.desc;
+      document.getElementById('carousel-price').innerText = item.price;
+      document.getElementById('carousel-rating').innerText = item.rating;
+      document.getElementById('carousel-time').innerHTML = `<i data-lucide="clock" class="w-3.5 h-3.5"></i> ${item.deliverTime}`;
+      document.getElementById('carousel-min').innerText = item.minQtyText;
+      document.getElementById('carousel-indicator').innerText = `${currentSlide + 1} / ${restaurantsData.length}`;
+
+      const bars = document.querySelectorAll('.indicator-bar');
+      bars.forEach((b, idx) => {
+        b.className = idx === currentSlide
+          ? "h-1.5 rounded-full transition-all duration-300 indicator-bar w-8 bg-brick"
+          : "h-1.5 rounded-full transition-all duration-300 indicator-bar w-3 bg-stone-200";
+      });
+      lucide.createIcons();
+    }
+
+    function startCarousel() {
+      if (carouselTimer) clearInterval(carouselTimer);
+      carouselTimer = setInterval(nextSlide, 5000);
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % restaurantsData.length;
+      updateCarousel();
+      startCarousel();
+    }
+
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + restaurantsData.length) % restaurantsData.length;
+      updateCarousel();
+      startCarousel();
+    }
+
+    function goToSlide(idx) {
+      currentSlide = idx;
+      updateCarousel();
+      startCarousel();
+    }
+
+    // ================= 頁面無縫切換 =================
+    // 首頁 -> 開啟店家詳細資訊頁面
+    function openRestaurant(restId) {
+      currentRestaurant = restaurantsData.find(r => r.id === restId) || restaurantsData[0];
+      cart = {}; // 切換店家清空購物車
+      isOutOfRange = false; // 預設處於外送範圍內
+
+      // 載入店家專屬資訊 (含地址)
+      document.getElementById('detail-hero-img').src = currentRestaurant.heroImg;
+      document.getElementById('detail-tag').innerText = currentRestaurant.tag;
+      document.getElementById('detail-name').innerText = currentRestaurant.name;
+      document.getElementById('detail-address').innerText = currentRestaurant.address;
+      document.getElementById('detail-rating').innerText = currentRestaurant.rating;
+      document.getElementById('detail-hours').innerText = currentRestaurant.hours;
+      document.getElementById('detail-phone').innerText = currentRestaurant.phone;
+      document.getElementById('detail-min-text').innerText = currentRestaurant.minQtyText;
+
+      renderDetailMenu();
+      updateCartUI();
+      updateRangeStateUI();
+
+      // 切換頁面視圖
+      document.getElementById('page-home').classList.add('hidden');
+      document.getElementById('page-detail').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    function openCurrentRestaurant() {
+      openRestaurant(restaurantsData[currentSlide].id);
+    }
+
+    // 店家詳細頁 -> 返回首頁
+    function goToHome() {
+      document.getElementById('page-detail').classList.add('hidden');
+      document.getElementById('page-home').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 渲染店家菜單卡片列表 (草圖格式：左邊圖、右邊 info + 增減按鈕)
+    function renderDetailMenu() {
+      const container = document.getElementById('detail-menu-list');
+      container.innerHTML = currentRestaurant.menu.map(item => {
+        const qty = cart[item.id] || 0;
+        return `
+          <div class="bg-white rounded-2xl p-3 border border-stone-100 flex items-center gap-3 shadow-xs">
+            <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-stone-100">
+              <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-stone-900 text-xs truncate">${item.name}</h4>
+              <p class="text-xs text-stone-600 line-clamp-1 mt-0.5">${item.desc}</p>
+              <div class="flex items-center justify-between mt-1.5">
+                <span class="text-xs font-black text-brick font-mono">NT$ ${item.price}</span>
+                <div class="flex items-center gap-2">
+                  <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 rounded-md bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-xs active:bg-stone-200 transition">
+                    -
+                  </button>
+                  <span id="qty-val-${item.id}" class="w-4 text-center text-xs font-bold text-stone-800">${qty}</span>
+                  <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 rounded-md bg-brick text-white flex items-center justify-center font-bold text-xs active:bg-brick-dark transition shadow-xs">
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // 增減菜單餐點數量
+    function changeQty(itemId, delta) {
+      if (isOutOfRange) {
+        showRangeWarning();
+        return;
+      }
+      const cur = cart[itemId] || 0;
+      const next = Math.max(0, cur + delta);
+      if (next === 0) {
+        delete cart[itemId];
+      } else {
+        cart[itemId] = next;
+      }
+      
+      const el = document.getElementById(`qty-val-${itemId}`);
+      if (el) el.innerText = next;
+      updateCartUI();
+    }
+
+    // 更新購物車與底部 Buy 欄狀態
+    function updateCartUI() {
+      let count = 0;
+      let total = 0;
+      currentRestaurant.menu.forEach(item => {
+        const q = cart[item.id] || 0;
+        count += q;
+        total += q * item.price;
+      });
+
+      document.getElementById('cart-count').innerText = count;
+      document.getElementById('cart-price').innerText = total;
+
+      // 頂部購物車 Badge
+      const badge = document.getElementById('detail-cart-badge');
+      if (count > 0) {
+        badge.innerText = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      // 門檻防呆與按鈕文案處理
+      const warning = document.getElementById('cart-warning');
+      const btnBuy = document.getElementById('btn-buy');
+      const btnBuyText = document.getElementById('btn-buy-text');
+
+      if (isOutOfRange) {
+        btnBuy.disabled = true;
+        btnBuy.className = "flex-1 bg-stone-300 text-stone-500 font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 cursor-not-allowed";
+        btnBuyText.innerText = "超出外送範圍無法下單";
+        warning.classList.add('hidden');
+        return;
+      }
+
+      if (count === 0) {
+        btnBuy.disabled = false;
+        btnBuy.className = "flex-1 bg-brick hover:bg-brick-dark text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 active:scale-[0.98] transition";
+        btnBuyText.innerText = `選購餐點 (${currentRestaurant.minQtyText})`;
+        warning.classList.add('hidden');
+      } else if (count < currentRestaurant.minQty) {
+        const diff = currentRestaurant.minQty - count;
+        btnBuy.disabled = false;
+        btnBuy.className = "flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition";
+        btnBuyText.innerText = `還差 ${diff} 份起送`;
+        document.getElementById('need-more-count').innerText = diff;
+        warning.classList.remove('hidden');
+      } else {
+        btnBuy.disabled = false;
+        btnBuy.className = "flex-1 bg-brick hover:bg-brick-dark text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 active:scale-[0.98] transition";
+        btnBuyText.innerText = `確認來電訂餐 (${count} 份)`;
+        warning.classList.add('hidden');
+      }
+    }
+
+    // 模擬外送範圍限制遮罩 (草圖 mask 切換)
+    function toggleRangeSimulation() {
+      isOutOfRange = !isOutOfRange;
+      updateRangeStateUI();
+      updateCartUI();
+    }
+
+    function updateRangeStateUI() {
+      const mask = document.getElementById('range-mask');
+      const btn = document.getElementById('btn-toggle-range');
+      if (isOutOfRange) {
+        if (mask) mask.classList.remove('hidden');
+        if (btn) {
+          btn.innerText = "切換回【外送範圍內】";
+          btn.className = "px-2.5 py-1 bg-brick text-white rounded-lg text-xs font-bold shadow-xs transition active:scale-95";
+        }
+      } else {
+        if (mask) mask.classList.add('hidden');
+        if (btn) {
+          btn.innerText = "切換為【超出外送範圍】";
+          btn.className = "px-2.5 py-1 bg-white border border-stone-300 rounded-lg text-stone-700 font-bold hover:border-brick transition text-xs shadow-xs active:scale-95";
+        }
+      }
+      lucide.createIcons();
+    }
+
+    function showRangeWarning() {
+      const toast = document.createElement('div');
+      toast.className = "fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-stone-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 transition-all duration-300";
+      toast.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i> <span>超出店家外送範圍，無法點餐！</span>`;
+      document.body.appendChild(toast);
+      lucide.createIcons();
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2000);
+    }
+
+    // 點擊底部 Buy 按鈕觸發
+    function handleBuyClick() {
+      if (isOutOfRange) {
+        showRangeWarning();
+        return;
+      }
+      let count = 0;
+      let items = [];
+      let total = 0;
+      currentRestaurant.menu.forEach(item => {
+        const q = cart[item.id] || 0;
+        if (q > 0) {
+          count += q;
+          total += q * item.price;
+          items.push(`${item.name} × ${q}`);
+        }
+      });
+
+      if (count === 0) {
+        alert("請先從菜單點選想吃的餐點！");
+        return;
+      }
+      if (count < currentRestaurant.minQty) {
+        alert(`未滿起送門檻！本店至少需滿 ${currentRestaurant.minQty} 份才可提供外送喔！`);
+        return;
+      }
+
+      document.getElementById('modal-desc').innerHTML = `
+        <div class="space-y-1">
+          <div><span class="text-stone-500">店家：</span><b class="text-stone-900">${currentRestaurant.name}</b></div>
+          <div><span class="text-stone-500">門市地址：</span><span class="text-stone-800">${currentRestaurant.address}</span></div>
+          <div><span class="text-stone-500">訂購品項：</span><span class="text-stone-800">${items.join('、')}</span></div>
+          <div class="pt-1 text-sm font-black text-brick">總計金額：NT$ ${total} (免外送費)</div>
+        </div>
+      `;
+      document.getElementById('modal-call-link').href = `tel:${currentRestaurant.phone.replace(/-/g, '')}`;
+      document.getElementById('modal-call').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-call').classList.add('hidden');
+    }
+
+    function focusCartBottom() {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // 點擊彈窗遮罩關閉
+    document.getElementById('modal-call').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>

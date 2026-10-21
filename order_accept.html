@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>來電送 - 店家接單</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brick: {
+              DEFAULT: '#C84B31',
+              dark: '#A53B24',
+              light: '#FDF4F2'
+            }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F8F6F4;
+      font-family: "Noto Sans TC", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* 手繪稿頂部「你的單來囉！」斜線紋理背景 */
+    .incoming-order-banner {
+      background-color: #C84B31;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, 0.12),
+        rgba(255, 255, 255, 0.12) 12px,
+        transparent 12px,
+        transparent 24px
+      );
+    }
+  </style>
+</head>
+<body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
+
+  <!-- ========================================================= -->
+  <!-- 頁面 3：店家接單頁面 (Screen 3 - 店家接單)                -->
+  <!-- ========================================================= -->
+  <div id="page-order-accept" class="min-h-screen flex flex-col justify-between pb-24">
+    
+    <!-- 頂部品牌與頁面導覽列 (嚴格使用：大 text-xl、中 text-base、小 text-xs) -->
+    <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 shadow-xs">
+      <div class="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
+        
+        <!-- 品牌專屬向量 Logo -->
+        <a href="code_artifact.html" class="flex items-center gap-2.5 cursor-pointer select-none">
+          <div class="w-11 h-11 rounded-2xl bg-brick p-1.5 flex items-center justify-center shadow-md shadow-red-950/15 shrink-0">
+            <svg viewBox="0 0 100 100" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 38 18 
+                       L 24 38 
+                       L 34 38 
+                       L 20 62 
+                       C 22 74, 34 76, 44 75 
+                       L 68 75 
+                       L 68 67 
+                       L 82 77 
+                       L 68 87 
+                       L 68 79 
+                       C 42 79, 14 77, 12 58 
+                       L 24 34 
+                       L 16 34 
+                       Z" 
+                    fill="#FFFFFF" />
+              <path d="M 44 26 L 49 32" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 68 25 L 63 32" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 40 38 L 72 38" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 36 49 L 77 49" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+              <path d="M 56 49 Q 53 62 42 68" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M 57 51 Q 63 60 74 67" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
+            <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">店家接單中心</span>
+          </div>
+        </a>
+
+        <!-- 模擬訂單切換器 (Mock Data Sets 切換測試) -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs text-stone-500 font-bold">模擬單號：</span>
+          <button onclick="switchMockOrder(0)" id="mock-btn-0" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95">#101</button>
+          <button onclick="switchMockOrder(1)" id="mock-btn-1" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#102</button>
+          <button onclick="switchMockOrder(2)" id="mock-btn-2" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#103</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- 店家接單主視覺容器 -->
+    <main class="flex-1 max-w-xl w-full mx-auto px-4 py-5 flex flex-col justify-center">
+      
+      <!-- 頂部副標列 (小 text-xs) -->
+      <div class="flex items-center justify-between mb-2.5 px-1">
+        <h2 class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
+          <i data-lucide="bell-ring" class="w-3.5 h-3.5 text-brick"></i> 店家接單通知
+        </h2>
+        <span id="order-status-badge" class="text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md border border-red-200/60">
+          待接單
+        </span>
+      </div>
+
+      <!-- 接單卡片本體 (對應手繪稿外框) -->
+      <div class="bg-white rounded-3xl overflow-hidden shadow-xl shadow-stone-200/70 border border-stone-200/80 flex flex-col">
+        
+        <!-- 1. 手繪稿頂部橫幅：「你的單來囉！」 -->
+        <div class="incoming-order-banner px-6 py-7 text-white text-center relative overflow-hidden border-b border-red-900/10">
+          <div class="inline-flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-3 py-1 rounded-full text-xs font-bold mb-2">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span id="order-store-name">禾風堂手作便當</span>
+            <span>•</span>
+            <span id="order-id" class="font-mono">單號 #101</span>
+          </div>
+          <h1 class="text-xl font-black tracking-wide drop-shadow-sm flex items-center justify-center gap-2">
+            <i data-lucide="flame" class="w-6 h-6"></i>
+            <span>你的單來囉！</span>
+          </h1>
+        </div>
+
+        <!-- 2. 手繪稿四大核心項目列表 -->
+        <div class="p-5 space-y-4">
+          
+          <!-- 項目一：幾點前送到 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-brick-light/70 border border-red-200/60">
+            <div class="w-10 h-10 rounded-xl bg-brick text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <i data-lucide="clock" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-xs font-bold text-stone-500 block">幾點前送到</span>
+              <p id="order-deliver-by" class="text-xl font-black text-brick mt-0.5"></p>
+            </div>
+          </div>
+
+          <!-- 項目二：收件地址 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70">
+            <div class="w-10 h-10 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="map-pin" class="w-5 h-5 text-brick"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-xs font-bold text-stone-500 block">收件地址</span>
+              <p id="order-address" class="text-base font-black text-stone-900 mt-0.5 leading-snug"></p>
+            </div>
+          </div>
+
+          <!-- 項目三：品項 / 數量 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70">
+            <div class="w-10 h-10 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="utensils" class="w-5 h-5 text-brick"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-stone-500">品項 / 數量</span>
+                <span id="order-total-qty" class="text-xs font-bold text-brick bg-brick-light px-2 py-0.5 rounded-md"></span>
+              </div>
+              <div id="order-items-list" class="mt-2 space-y-2 border-t border-stone-200/80 pt-2">
+                <!-- 動態渲染品項與數量 -->
+              </div>
+              <div class="mt-3 pt-2.5 border-t border-stone-200/80 flex items-center justify-between">
+                <span class="text-xs font-bold text-stone-600">應收總計（免外送費）</span>
+                <span id="order-total-price" class="text-xl font-black text-brick font-mono"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 項目四：顧客名 / 電話 -->
+          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70">
+            <div class="w-10 h-10 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
+              <i data-lucide="user-check" class="w-5 h-5 text-brick"></i>
+            </div>
+            <div class="flex-1 min-w-0 flex items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-bold text-stone-500 block">顧客名 / 電話</span>
+                <p id="order-customer" class="text-base font-black text-stone-900 mt-0.5"></p>
+              </div>
+              <a id="order-customer-call" href="#" class="px-3 py-2 rounded-xl bg-white border border-stone-200 text-brick text-xs font-bold flex items-center gap-1.5 shadow-xs hover:border-brick transition active:scale-95 shrink-0">
+                <i data-lucide="phone" class="w-3.5 h-3.5"></i> 聯絡顧客
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. 手繪稿底部行動按鈕：「接受訂單！」 -->
+        <div class="px-5 pb-5 pt-1">
+          <button id="btn-accept-order" onclick="acceptOrder()" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition">
+            <span class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-base font-mono">$</span>
+            <span id="btn-accept-text">接受訂單！</span>
+          </button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- 頁尾 (小 text-xs) -->
+    <footer class="w-full text-center py-3 text-xs text-stone-600">
+      <p>© 來電送 • 店家接單系統</p>
+    </footer>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 已接單回饋畫面彈窗 (Modal)                                -->
+  <!-- ========================================================= -->
+  <div id="modal-accepted" class="fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative">
+      <div class="w-14 h-14 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
+        <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-xl font-black text-stone-900">已成功接受訂單！</h3>
+      <p class="text-xs text-stone-600 mt-1">請開始準備餐點，並於指定時間前送達</p>
+
+      <!-- 接單摘要區塊 -->
+      <div id="modal-accepted-summary" class="text-xs text-stone-700 my-4 leading-relaxed bg-stone-50 p-3.5 rounded-2xl border border-stone-200/80 text-left space-y-1.5">
+        <!-- 動態填入接單摘要 -->
+      </div>
+
+      <button onclick="closeAcceptedModal()" class="w-full py-3 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition active:scale-95">
+        確認，開始備餐
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- JavaScript: Mock Data Sets 與接單狀態管理                 -->
+  <!-- ========================================================= -->
+  <script>
+    // Mock Data Sets (預設第一筆為王小明 / 0912-345-678、台北市信義區松高路 11 號 5 樓、12:15 前送到)
+    const mockOrdersData = [
+      {
+        orderId: "#101",
+        storeName: "禾風堂手作便當",
+        deliverBy: "12:15 前送到",
+        address: "台北市信義區松高路 11 號 5 樓",
+        customerName: "王小明",
+        customerPhone: "0912-345-678",
+        accepted: false,
+        items: [
+          { name: "秘傳酥炸排骨便當", qty: 2, price: 120 },
+          { name: "蜜汁香烤大雞腿飯", qty: 1, price: 135 }
+        ]
+      },
+      {
+        orderId: "#102",
+        storeName: "築地漁火日式定食",
+        deliverBy: "12:30 前送到",
+        address: "台北市大安區敦化南路一段 188 號 10 樓",
+        customerName: "林雅婷",
+        customerPhone: "0928-666-888",
+        accepted: false,
+        items: [
+          { name: "極上炙燒鮭魚腹丼", qty: 2, price: 180 },
+          { name: "和風醬烤鯖魚定食", qty: 2, price: 160 }
+        ]
+      },
+      {
+        orderId: "#103",
+        storeName: "青嵐健康水煮餐",
+        deliverBy: "12:00 前送到",
+        address: "台北市松山區民生東路三段 128 號 3 樓",
+        customerName: "陳建宏",
+        customerPhone: "0933-111-222",
+        accepted: false,
+        items: [
+          { name: "義式香草舒肥雞胸餐", qty: 3, price: 130 },
+          { name: "水煮嫩煎板腱牛便當", qty: 1, price: 165 }
+        ]
+      }
+    ];
+
+    let currentOrderIdx = 0;
+
+    function initOrderPage() {
+      renderOrder();
+    }
+
+    function switchMockOrder(idx) {
+      currentOrderIdx = idx;
+      renderOrder();
+    }
+
+    function renderOrder() {
+      const order = mockOrdersData[currentOrderIdx];
+
+      // 更新頂部模擬單號切換按鈕樣式
+      mockOrdersData.forEach((_, idx) => {
+        const btn = document.getElementById(`mock-btn-${idx}`);
+        if (btn) {
+          btn.className = idx === currentOrderIdx
+            ? "px-2.5 py-1 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95"
+            : "px-2.5 py-1 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95";
+        }
+      });
+
+      // 填入訂單欄位
+      document.getElementById('order-store-name').innerText = order.storeName;
+      document.getElementById('order-id').innerText = `單號 ${order.orderId}`;
+      document.getElementById('order-deliver-by').innerText = order.deliverBy;
+      document.getElementById('order-address').innerText = order.address;
+      document.getElementById('order-customer').innerText = `${order.customerName} / ${order.customerPhone}`;
+      document.getElementById('order-customer-call').href = `tel:${order.customerPhone.replace(/-/g, '')}`;
+
+      // 計算品項與總金額
+      let totalQty = 0;
+      let totalPrice = 0;
+      const itemsHtml = order.items.map(item => {
+        totalQty += item.qty;
+        const subtotal = item.qty * item.price;
+        totalPrice += subtotal;
+        return `
+          <div class="flex items-center justify-between text-base">
+            <span class="font-bold text-stone-800">${item.name}</span>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold bg-white border border-stone-200 text-stone-800 px-2 py-0.5 rounded-md">x ${item.qty}</span>
+              <span class="text-xs font-mono font-bold text-stone-600 w-16 text-right">NT$ ${subtotal}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('order-items-list').innerHTML = itemsHtml;
+      document.getElementById('order-total-qty').innerText = `共 ${totalQty} 份`;
+      document.getElementById('order-total-price').innerText = `NT$ ${totalPrice}`;
+
+      // 更新接單狀態徽章與按鈕
+      const badge = document.getElementById('order-status-badge');
+      const btnAccept = document.getElementById('btn-accept-order');
+      const btnAcceptText = document.getElementById('btn-accept-text');
+
+      if (order.accepted) {
+        badge.innerText = "已接單 • 備餐中";
+        badge.className = "text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200";
+        btnAccept.className = "w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg transition";
+        btnAcceptText.innerText = "已接受訂單（查看詳情）";
+      } else {
+        badge.innerText = "待接單";
+        badge.className = "text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md border border-red-200/60";
+        btnAccept.className = "w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition";
+        btnAcceptText.innerText = "接受訂單！";
+      }
+
+      lucide.createIcons();
+    }
+
+    function acceptOrder() {
+      const order = mockOrdersData[currentOrderIdx];
+      order.accepted = true;
+      renderOrder();
+
+      let totalQty = 0;
+      let totalPrice = 0;
+      const itemsText = order.items.map(i => {
+        totalQty += i.qty;
+        totalPrice += i.qty * i.price;
+        return `${i.name} × ${i.qty}`;
+      }).join('、');
+
+      document.getElementById('modal-accepted-summary').innerHTML = `
+        <div><span class="text-stone-500">訂單編號：</span><b class="text-stone-900">${order.orderId} (${order.storeName})</b></div>
+        <div><span class="text-stone-500">送達時間：</span><b class="text-brick">${order.deliverBy}</b></div>
+        <div><span class="text-stone-500">收件地址：</span><span class="text-stone-900 font-bold">${order.address}</span></div>
+        <div><span class="text-stone-500">顧客資訊：</span><span class="text-stone-900 font-bold">${order.customerName} (${order.customerPhone})</span></div>
+        <div><span class="text-stone-500">餐點明細：</span><span class="text-stone-800">${itemsText}</span></div>
+        <div class="pt-1 border-t border-stone-200/80 text-base font-black text-brick">應收金額：NT$ ${totalPrice} (共 ${totalQty} 份)</div>
+      `;
+
+      document.getElementById('modal-accepted').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeAcceptedModal() {
+      document.getElementById('modal-accepted').classList.add('hidden');
+    }
+
+    // 點擊彈窗遮罩關閉
+    document.getElementById('modal-accepted').addEventListener('click', function(e) {
+      if (e.target === this) closeAcceptedModal();
+    });
+
+    window.onload = initOrderPage;
+  </script>
+</body>
+</html>
