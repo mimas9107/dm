@@ -3,8 +3,8 @@ name: "PLAN.md"
 description: "來電送 CALL & DELIVER — 前端 B 組 Monolithic Script 重構計畫"
 created_date: "2026/10/21"
 modified_date: "2026/10/22"
-project_version: "1.0.0"
-document_version: "1.0.1"
+project_version: "1.1.0"
+document_version: "1.0.2"
 agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 ---
 
@@ -12,6 +12,7 @@ agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 
 > 本文件是**重構的設計依據**（做什麼、為什麼、怎麼驗）。
 > 實際執行步驟與進度請見 [TASK.md](./TASK.md)。
+> class 使用情況分析請見 [CLASS-AUDIT.md](./CLASS-AUDIT.md)。
 
 ---
 

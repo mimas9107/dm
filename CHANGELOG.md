@@ -2,21 +2,51 @@
 name: "CHANGELOG.md"
 description: "來電送 CALL & DELIVER — 變更紀錄（版本單一事實來源）"
 created_date: "2026/10/21"
-modified_date: "2026/10/21"
-project_version: "1.0.0"
-document_version: "1.0.0"
+modified_date: "2026/10/22"
+project_version: "1.1.0"
+document_version: "1.0.1"
 agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 ---
 
 # 變更紀錄 (CHANGELOG)
 
 本檔為專案**版本號的單一事實來源 (Source of Truth)**。
-`README.md`、`PLAN.md`、`TASK.md` 的 `project_version` 必須與本檔一致。
+`README.md`、`PLAN.md`、`TASK.md`、`CLASS-AUDIT.md` 的 `project_version` 必須與本檔一致。
 
 版本格式：`MAJOR.MINOR.PATCH`
 - **MAJOR**：不相容的 API 變更
 - **MINOR**：向下相容的新功能
 - **PATCH**：向下相容的錯誤修正
+
+---
+
+## [1.1.0] — 2026/10/22
+
+### 新增
+- `CLASS-AUDIT.md`：各頁面 class 屬性分析總整理
+  （總量統計、樣式來源分類、變體與類別分布、設計尺度一致性、元件化候選）
+- `tests/class-audit.mjs`：class 稽核工具（零外部相依，Node 內建 `fetch` / `WebSocket`）
+  - 靜態擷取：HTML `class` 屬性、JS template 字串內的 `class` 屬性、
+    `const xxxClass = '...'` 形式的 class 字串常數
+  - 瀏覽器分類：以 Tailwind Play CDN **實際產生的樣式表**為準，
+    將每個 class 分為「Tailwind 產出 / 本地自訂 CSS / 查無對應」
+  - 失效驗證：對「查無對應」的 class，在真實頁面上移除該 class 後
+    比對 38 項計算樣式，確認是否為**靜默失效 (silent no-op)**
+  - 支援 `--no-browser`（僅靜態分析）與 `--json`（機器可讀輸出）
+
+### 稽核發現（**尚未修正，待決**）
+- **12 項 class 靜默失效**：專案使用 Tailwind Play CDN **v3.4.17**，
+  但使用了 **v4 才有的**類名（`shadow-xs` × 12、`shadow-2xs` × 2、
+  `backdrop-blur-xs` × 6），以及**間距刻度不存在的數值**
+  （`md:py-4.5`、`sm:left-13`、`sm:right-13`）—— 皆不產生任何 CSS 且無錯誤訊息
+- **3 處鍵盤 focus 圈被遮蔽**：`user_order_track.html` 的進度按鈕帶有
+  `focus:outline-none`，實測會把 `css/base.css` 的磚紅色 focus 圈轉為透明
+- 3 個 `group` class 全站無任何 `group-*` 變體配套，屬無作用標記
+
+### 驗證
+- `tests/class-audit.mjs`：4 頁合計 452 個不重複 class token，
+  906 個由 Tailwind 產出、2 個由本地 CSS 定義、12 項靜默失效（已全數實測確認）
+- 6 個建議替代 class 皆已實測確認會在目前的 CDN 版本下產出 CSS
 
 ---
 

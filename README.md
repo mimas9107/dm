@@ -2,9 +2,9 @@
 name: "README.md"
 description: "來電送 CALL & DELIVER — 午間專送平台前端"
 created_date: "2026/10/21"
-modified_date: "2026/10/21"
-project_version: "1.0.0"
-document_version: "1.0.0"
+modified_date: "2026/10/22"
+project_version: "1.1.0"
+document_version: "1.0.1"
 agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 ---
 
@@ -81,11 +81,13 @@ dm/
 │       └── controller.js
 │
 ├── tests/
-│   └── smoke.mjs               headless Chrome 回歸測試
+│   ├── smoke.mjs                headless Chrome 回歸測試
+│   └── class-audit.mjs          class 屬性稽核工具
 │
 ├── serve.sh                    一鍵啟動本地伺服器
 ├── PLAN.md                     重構設計依據
 ├── TASK.md                     重構執行任務表
+├── CLASS-AUDIT.md              各頁面 class 屬性分析總整理
 └── CHANGELOG.md                變更紀錄（版本單一事實來源）
 ```
 
@@ -117,11 +119,16 @@ dm/
 ## 測試
 
 ```bash
-node tests/smoke.mjs
+node tests/smoke.mjs          # 4 頁核心流程回歸測試（含跨分頁即時同步）
+node tests/class-audit.mjs    # class 屬性稽核（找出無效樣式）
 ```
 
 以 headless Chrome 執行 4 頁核心流程回歸測試（含跨分頁即時同步），
 零外部 npm 依賴（僅用 Node 內建 `fetch` 與 `WebSocket`）。
+
+`tests/class-audit.mjs` 會以瀏覽器**實際產生的樣式表**為準分類每個 class，
+並對「查無對應」的 class 在真實頁面上驗證是否為**靜默失效**。
+分析報告見 [CLASS-AUDIT.md](./CLASS-AUDIT.md)。
 
 ---
 
@@ -130,6 +137,6 @@ node tests/smoke.mjs
 | 檔案 | 說明 |
 |---|---|
 | `CHANGELOG.md` | 版本號的**單一事實來源** |
-| `README.md` / `PLAN.md` / `TASK.md` | `project_version` 必須與 CHANGELOG 一致 |
+| `README.md` / `PLAN.md` / `TASK.md` / `CLASS-AUDIT.md` | `project_version` 必須與 CHANGELOG 一致 |
 
-目前版本：**1.0.0**
+目前版本：**1.1.0**

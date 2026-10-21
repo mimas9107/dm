@@ -3,14 +3,15 @@ name: "TASK.md"
 description: "來電送 CALL & DELIVER — 前端 B 組 Monolithic Script 重構執行任務"
 created_date: "2026/10/21"
 modified_date: "2026/10/22"
-project_version: "1.0.0"
-document_version: "1.0.1"
+project_version: "1.1.0"
+document_version: "1.0.2"
 agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 ---
 
 # 重構執行任務表 (TASK.md)
 
 > 設計依據見 [PLAN.md](./PLAN.md)。本檔記錄**執行步驟、順序與進度**。
+> class 稽核報告見 [CLASS-AUDIT.md](./CLASS-AUDIT.md)。
 > 狀態圖例：`[ ]` 未開始　`[~]` 進行中　`[x]` 已完成
 
 ---
@@ -32,6 +33,7 @@ agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 | T10 | inline `onclick` → 事件委派全數改造 | P3 | `[x]` |
 | T11 | `tests/smoke.mjs` 回歸測試 + 全流程驗證 | P4 | `[x]` |
 | T12 | 文件同步（README / CHANGELOG / 版本號） | P4 | `[x]` |
+| T13 | class 屬性稽核（`CLASS-AUDIT.md` + `tests/class-audit.mjs`） | P5 | `[x]` |
 
 > **執行順序原則**：T0 → T1/T2 → T3 → T4 → T5 → T6~T9 → T10 → T11 → T12。
 > T3~T5 完成後，四個頁面的 JS 才有可 import 的共用基礎，**不可跳過**。
@@ -265,6 +267,41 @@ agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 
 ---
 
+## T13 — class 屬性稽核
+
+**目標**：盤點 4 頁的 class 使用情形，找出「寫了但從來沒生效」的樣式。
+
+> 完整報告見 [CLASS-AUDIT.md](./CLASS-AUDIT.md)。
+
+- [x] 建立 `tests/class-audit.mjs`（零外部相依，Node 內建 `fetch` / `WebSocket`）
+      - 靜態擷取：HTML `class` 屬性、JS template 字串內的 `class` 屬性、
+        `const xxxClass = '...'` 形式的 class 字串常數
+      - 瀏覽器分類：以 Tailwind Play CDN **實際產生的樣式表**為準
+        （含 `@media` 遞迴、跳脫字元還原）
+      - 失效驗證：對「查無對應」的 class，在真實頁面上移除該 class 後
+        比對 38 項計算樣式
+      - 支援 `--no-browser`（僅靜態分析）與 `--json`
+- [x] 產出 `CLASS-AUDIT.md`：總量統計、樣式來源分類、變體與類別分布、
+      設計尺度一致性、元件化候選
+- [x] 記錄 **12 項靜默失效** class 與 3 處鍵盤 focus 圈被遮蔽
+      （**僅記錄，未擅自修正** —— 修正會改變實際外觀，須經確認）
+
+**稽核結果摘要**：
+
+| 項目 | 數量 |
+|---|---|
+| 全站不重複 class token | 452 |
+| 由 Tailwind 產出 | 906（跨頁重複計） |
+| 由本地 CSS 定義 | 2 |
+| 4 頁皆使用的共用 class | 99 |
+| **靜默失效** | **12** |
+| **鍵盤 focus 圈被遮蔽** | **3** |
+
+**驗收**：`node tests/class-audit.mjs` 可重跑並重現報告；
+12 項靜默失效皆經「移除 class → 計算樣式無變化」實測確認。
+
+---
+
 ## 風險檢查清單（每個 Task 完成後必跑）
 
 ```bash
@@ -282,6 +319,9 @@ for f in $(find js -name '*.js'); do node --check "$f" || echo "SYNTAX FAIL: $f"
 
 # 回歸測試
 node tests/smoke.mjs
+
+# class 稽核（找出無效樣式）
+node tests/class-audit.mjs
 ```
 
 ---
@@ -293,3 +333,5 @@ node tests/smoke.mjs
 | 2026/10/21 | 建立 TASK.md，拆解為 T0~T12 共 13 個任務 | 1.0.0 |
 
 | 2026/10/22 | 完成 T6~T12：頁面模組拆分、事件委派改造、回歸測試套件（14 案例 / 70 項檢查全數通過）、舊版 vs 新版 DOM 與樣式逐項比對無差異 | 1.0.0 |
+
+| 2026/10/22 | 完成 T13：class 屬性稽核（新增 `CLASS-AUDIT.md` 與 `tests/class-audit.mjs`），查出 12 項靜默失效 class 與 3 處鍵盤 focus 圈被遮蔽（僅記錄未修正） | 1.1.0 |
