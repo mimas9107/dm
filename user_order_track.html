@@ -50,7 +50,7 @@
       <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 min-h-16 md:min-h-20 py-2.5 md:py-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         
         <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
-        <a href="code_artifact.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
+        <a href="index.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
           <img src="CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
           <div class="shrink-0 whitespace-nowrap">
             <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
@@ -157,7 +157,7 @@
 
             <!-- 手繪稿底部按鈕：回首頁 (平板時位於左欄預計送達時間正下方，手機時維持在最底部) -->
             <div class="hidden md:flex justify-center">
-              <a href="code_artifact.html" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
+              <a href="index.html" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
                 <i data-lucide="home" class="w-4 h-4"></i>
                 <span>回首頁</span>
               </a>
@@ -204,7 +204,7 @@
 
             <!-- 手機版底部按鈕：回首頁 (md 以上隱藏，由左欄顯示) -->
             <div class="pt-1 flex md:hidden justify-center">
-              <a href="code_artifact.html" class="w-full sm:w-64 bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-3.5 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
+              <a href="index.html" class="w-full sm:w-64 bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-3.5 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
                 <i data-lucide="home" class="w-4 h-4"></i>
                 <span>回首頁</span>
               </a>
@@ -216,115 +216,172 @@
       </div>
     </main>
 
-    <!-- 頁尾 (小 text-xs) -->
-    <footer class="w-full text-center py-3 text-xs text-stone-600">
-      <p>© 來電送 • 準時專送</p>
+    <!-- 頁尾 (小 text-xs)：角色切換小字連結 -->
+    <footer class="w-full text-center py-4 px-4 text-xs text-stone-500 border-t border-stone-200/50 bg-white/50">
+      <div class="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+        <span>© 來電送 • 準時專送</span>
+        <span class="text-stone-300">|</span>
+        <a href="index.html" class="hover:text-brick hover:underline">顧客首頁</a>
+        <span>·</span>
+        <a href="user_order_track.html" class="text-brick font-bold hover:underline">訂單追蹤</a>
+        <span>·</span>
+        <a href="order_accept.html" class="hover:text-brick hover:underline">店家接單</a>
+        <span>·</span>
+        <a href="controller.html" class="hover:text-brick hover:underline">後台主控台</a>
+      </div>
     </footer>
   </div>
 
   <!-- ========================================================= -->
-  <!-- JavaScript: 多筆訂單切換、三階段進度與訂單摘要渲染        -->
+  <!-- JavaScript: 全站共用狀態同步、多筆訂單切換與三階段進度渲染 -->
   <!-- ========================================================= -->
   <script>
-    // 顧客的多筆訂單清單 (每張訂單各自維護獨立的 step 進度階段 0: 店家接單, 1: 已製作完成, 2: 已送達)
-    const userOrdersData = [
-      {
-        orderId: "#101",
-        storeName: "禾風堂手作便當",
-        deliverBy: "12:15",
-        address: "台北市信義區松高路 11 號 5 樓",
-        customerName: "王小明",
-        customerPhone: "0912-345-678",
-        step: 0,
-        items: [
-          { name: "秘傳酥炸排骨便當", qty: 2, price: 120 },
-          { name: "蜜汁香烤大雞腿飯", qty: 1, price: 135 }
+    const SHARED_STORAGE_KEY = 'laidiansong_shared_state_v1';
+
+    function getDefaultSharedState() {
+      return {
+        activeOrderId: "#101",
+        stores: [
+          { id: 1, name: "禾風堂手作便當", soundAlert: "叮咚和弦", soundEnabled: true, hours: "10:30 - 13:30", minOrder: "滿 3 份送", minQty: 3, active: true },
+          { id: 2, name: "築地漁火日式定食", soundAlert: "叮咚和弦", soundEnabled: true, hours: "11:00 - 14:00", minOrder: "滿 2 份送", minQty: 2, active: true },
+          { id: 3, name: "青嵐健康水煮餐", soundAlert: "靜音提示", soundEnabled: false, hours: "10:30 - 13:00", minOrder: "滿 2 份送", minQty: 2, active: true }
+        ],
+        customers: [
+          { id: 1, name: "王小明", tel: "0912-345-678", orders: ["#101", "#102", "#103"], abandonedCount: 0, blacklisted: false },
+          { id: 2, name: "林雅婷", tel: "0928-666-888", orders: ["#102"], abandonedCount: 0, blacklisted: false },
+          { id: 3, name: "陳建宏", tel: "0933-111-222", orders: ["#103"], abandonedCount: 1, blacklisted: false },
+          { id: 4, name: "張志豪", tel: "0955-999-000", orders: ["#089", "#094"], abandonedCount: 3, blacklisted: true }
+        ],
+        orders: [
+          {
+            orderId: "#101",
+            storeId: 1,
+            storeName: "禾風堂手作便當",
+            deliverBy: "12:15",
+            address: "台北市信義區松高路 11 號 5 樓",
+            customerName: "王小明",
+            customerPhone: "0912-345-678",
+            accepted: false,
+            step: 0,
+            items: [
+              { name: "秘傳酥炸排骨便當", qty: 2, price: 120 },
+              { name: "蜜汁香烤大雞腿飯", qty: 1, price: 135 }
+            ]
+          },
+          {
+            orderId: "#102",
+            storeId: 2,
+            storeName: "築地漁火日式定食",
+            deliverBy: "12:30",
+            address: "台北市大安區敦化南路一段 188 號 10 樓",
+            customerName: "林雅婷",
+            customerPhone: "0928-666-888",
+            accepted: true,
+            step: 1,
+            items: [
+              { name: "極上炙燒鮭魚腹丼", qty: 2, price: 180 },
+              { name: "和風醬烤鯖魚定食", qty: 2, price: 160 }
+            ]
+          },
+          {
+            orderId: "#103",
+            storeId: 3,
+            storeName: "青嵐健康水煮餐",
+            deliverBy: "12:00",
+            address: "台北市松山區民生東路三段 128 號 3 樓",
+            customerName: "陳建宏",
+            customerPhone: "0933-111-222",
+            accepted: true,
+            step: 2,
+            items: [
+              { name: "義式香草舒肥雞胸餐", qty: 3, price: 130 },
+              { name: "水煮嫩煎板腱牛便當", qty: 1, price: 165 }
+            ]
+          }
+        ],
+        cmsDocs: [
+          { key: "terms", shortLabel: "條款", fullTitle: "服務條款", updatedAt: "2026/10/21 16:30", content: "1. 訂單確認規範：顧客透過「來電送」送出訂單並經電話確認後，店家即刻開始備餐，恕不接受臨時改單或無故棄單。\n2. 棄單黑名單機制：若顧客累計無故棄單或拒收達 2 次（含）以上，系統管理員有權將該電話號碼列為黑名單並取消其訂餐權限。\n3. 準時專送承諾：合作店家均享免外送費門檻優惠，並於指定午餐時段準時送達。" },
+          { key: "support", shortLabel: "客服說明", fullTitle: "客服說明", updatedAt: "2026/10/21 16:35", content: "【來電送客服中心】\n• 服務專線：02-2345-6789\n• 服務時段：週一至週五 09:30 - 18:00\n• 緊急訂單協助：若餐點逾時超過 15 分鐘或品項有誤，請直接撥打店家專線或聯繫線上客服，我們將立即為您追蹤處理。" },
+          { key: "intro", shortLabel: "使用介紹", fullTitle: "使用介紹", updatedAt: "2026/10/21 16:40", content: "歡迎使用「來電送 CALL & DELIVER」午間專送平台：\n步驟 1：於首頁輪播瀏覽今日熱門便當與定食推薦。\n步驟 2：進入店家菜單頁選購餐點（達最低外送份數即享免外送費）。\n步驟 3：點擊「確認來電訂餐」完成撥號確認。\n步驟 4：於「訂單即時配送進度」頁面隨時查看【店家接單 → 已製作完成 → 已送達】三階段狀態。" },
+          { key: "faq", shortLabel: "常用問答", fullTitle: "常用問答 (FAQ)", updatedAt: "2026/10/21 16:45", content: "Q1：請問外送需要運費嗎？\nA1：只要湊滿該店家指定的最低外送份數（例如滿 2 份或 3 份），全面享免外送費！\n\nQ2：為什麼我的帳號無法下單？\nA2：若曾有多次未接電話或棄單紀錄，帳號將被系統列入黑名單停權；如需申訴復權請聯繫客服專線。\n\nQ3：可以同時訂購不同店家的餐點嗎？\nA3：可以！您可以在訂單追蹤頁面透過上方單號（如 #101、#102）切換查看每張訂單的獨立配送進度。" }
         ]
-      },
-      {
-        orderId: "#102",
-        storeName: "築地漁火日式定食",
-        deliverBy: "12:30",
-        address: "台北市信義區松高路 11 號 5 樓",
-        customerName: "王小明",
-        customerPhone: "0912-345-678",
-        step: 1,
-        items: [
-          { name: "極上炙燒鮭魚腹丼", qty: 2, price: 180 },
-          { name: "和風醬烤鯖魚定食", qty: 2, price: 160 }
-        ]
-      },
-      {
-        orderId: "#103",
-        storeName: "青嵐健康水煮餐",
-        deliverBy: "12:00",
-        address: "台北市信義區松高路 11 號 5 樓",
-        customerName: "王小明",
-        customerPhone: "0912-345-678",
-        step: 2,
-        items: [
-          { name: "義式香草舒肥雞胸餐", qty: 3, price: 130 },
-          { name: "水煮嫩煎板腱牛便當", qty: 1, price: 165 }
-        ]
-      }
-    ];
+      };
+    }
+
+    function loadSharedState() {
+      try {
+        const raw = localStorage.getItem(SHARED_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.stores && parsed.customers && parsed.orders) {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      const def = getDefaultSharedState();
+      saveSharedState(def);
+      return def;
+    }
+
+    function saveSharedState(state) {
+      try {
+        localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
 
     // 三階段狀態定義 (對應手繪稿：店家接單 -> 已製作完成 -> 已送達)
     const trackStages = [
       {
         label: "店家接單",
         etaTitle: "預計送達時間",
-        getEtaText: (time) => `${time} 前送達`,
-        desc: "店家已確認您的訂單，正用心準備餐點中"
+        getEtaText: (time) => `${String(time).replace(' 前送到', '')} 前送達`,
+        getDesc: (accepted) => accepted
+          ? "店家已確認接受您的訂單，正用心準備餐點中"
+          : "訂單已送出，正在等待店家點擊接受訂單..."
       },
       {
         label: "已製作完成",
         etaTitle: "預計送達時間",
-        getEtaText: (time) => `${time} 前送達（外送員配送中）`,
-        desc: "餐點已製作完成並由專人出發配送，請留意來電"
+        getEtaText: (time) => `${String(time).replace(' 前送到', '')} 前送達（外送員配送中）`,
+        getDesc: () => "餐點已製作完成並由專人出發配送，請留意來電"
       },
       {
         label: "已送達",
         etaTitle: "實際送達狀態",
-        getEtaText: (time) => `已於 ${time} 準時送達`,
-        desc: "餐點已送達指定地址，祝您用餐愉快！"
+        getEtaText: (time) => `已於 ${String(time).replace(' 前送到', '')} 準時送達`,
+        getDesc: () => "餐點已送達指定地址，祝您用餐愉快！"
       }
     ];
 
+    let sharedState = loadSharedState();
+    let userOrdersData = sharedState.orders;
     let currentOrderIdx = 0;
     let summaryExpanded = false;
 
-    function initTrackPage() {
-      // 若使用者剛從 code_artifact.html 下單跳轉，將最新下單資料同步進對應單號（或新增為第一筆）
-      try {
-        const saved = localStorage.getItem('laidiansong_latest_order');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && parsed.items && parsed.items.length > 0) {
-            const matchIdx = userOrdersData.findIndex(o => o.orderId === parsed.orderId || o.storeName === parsed.storeName);
-            if (matchIdx !== -1) {
-              userOrdersData[matchIdx] = {
-                ...userOrdersData[matchIdx],
-                ...parsed,
-                step: typeof parsed.step === 'number' ? parsed.step : 0
-              };
-              currentOrderIdx = matchIdx;
-            } else {
-              userOrdersData.unshift({
-                ...userOrdersData[0],
-                ...parsed,
-                step: 0
-              });
-              currentOrderIdx = 0;
-            }
-          }
-        }
-      } catch (e) {
-        // 忽略 localStorage 讀取限制
+    function syncOrdersFromStorage() {
+      sharedState = loadSharedState();
+      userOrdersData = sharedState.orders;
+      const targetIdx = userOrdersData.findIndex(o => o.orderId === sharedState.activeOrderId);
+      if (targetIdx !== -1) {
+        currentOrderIdx = targetIdx;
+      } else if (currentOrderIdx >= userOrdersData.length) {
+        currentOrderIdx = 0;
       }
+    }
 
+    function initTrackPage() {
+      syncOrdersFromStorage();
       renderOrderTabs();
       renderActiveOrder();
+
+      // 跨分頁即時同步：當店家在 order_accept.html 接單或推進配送階段時，顧客端自動更新
+      window.addEventListener('storage', (e) => {
+        if (e.key === SHARED_STORAGE_KEY) {
+          syncOrdersFromStorage();
+          renderOrderTabs();
+          renderActiveOrder();
+        }
+      });
     }
 
     // 渲染頂部多筆訂單單號切換按鈕
@@ -342,6 +399,10 @@
     // 切換查看不同張訂單
     function switchUserOrder(idx) {
       currentOrderIdx = idx;
+      if (userOrdersData[idx]) {
+        sharedState.activeOrderId = userOrdersData[idx].orderId;
+        saveSharedState(sharedState);
+      }
       renderOrderTabs();
       renderActiveOrder();
     }
@@ -349,6 +410,8 @@
     // 渲染當前選中訂單的進度條、預計送達時間與折疊明細
     function renderActiveOrder() {
       const activeOrder = userOrdersData[currentOrderIdx];
+      if (!activeOrder) return;
+
       document.getElementById('active-order-store').innerText = activeOrder.storeName;
       document.getElementById('track-order-id').innerText = `單號 ${activeOrder.orderId}`;
       document.getElementById('summary-store-brief').innerText = activeOrder.storeName;
@@ -371,21 +434,35 @@
       document.getElementById('summary-items-list').innerHTML = itemsHtml;
       document.getElementById('summary-total').innerText = `NT$ ${total}`;
 
-      setTrackStep(activeOrder.step);
+      applyTrackStepUI(typeof activeOrder.step === 'number' ? activeOrder.step : 0);
     }
 
-    // 切換當前訂單的三階段進度
+    // 點擊節點切換當前訂單的三階段進度（並同步回共用狀態庫）
     function setTrackStep(stepIdx) {
       const activeOrder = userOrdersData[currentOrderIdx];
+      if (!activeOrder) return;
       activeOrder.step = stepIdx;
-      const stage = trackStages[stepIdx];
+      if (stepIdx > 0) {
+        activeOrder.accepted = true;
+      }
+      saveSharedState(sharedState);
+      applyTrackStepUI(stepIdx);
+    }
+
+    function applyTrackStepUI(stepIdx) {
+      const activeOrder = userOrdersData[currentOrderIdx];
+      const stage = trackStages[stepIdx] || trackStages[0];
 
       // 更新右上角階段標籤
       const badge = document.getElementById('track-stage-badge');
-      badge.innerText = stage.label;
-      if (stepIdx === 2) {
+      if (stepIdx === 0 && !activeOrder.accepted) {
+        badge.innerText = "待店家接單確認";
+        badge.className = "text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200";
+      } else if (stepIdx === 2) {
+        badge.innerText = stage.label;
         badge.className = "text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200";
       } else {
+        badge.innerText = stage.label;
         badge.className = "text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md border border-red-200/60";
       }
 
@@ -399,21 +476,18 @@
         progressBar.style.width = '100%';
       }
 
-      // 更新 3 個圓圈節點與文字樣式 (支援 RWD 手機 w-14 / 平板 md:w-16)
+      // 更新 3 個圓圈節點與文字樣式
       for (let i = 0; i < 3; i++) {
         const circle = document.getElementById(`step-circle-${i}`);
         const label = document.getElementById(`step-label-${i}`);
 
         if (i < stepIdx) {
-          // 已完成階段
           circle.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-brick text-white border-2 border-brick flex items-center justify-center transition-all duration-300 shadow-sm";
           label.className = "text-base font-black tracking-tight text-brick transition-colors duration-300";
         } else if (i === stepIdx) {
-          // 當前進行中階段
           circle.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-brick text-white border-4 border-red-200 flex items-center justify-center transition-all duration-300 shadow-lg shadow-red-950/20 scale-105";
           label.className = "text-base font-black tracking-tight text-brick transition-colors duration-300";
         } else {
-          // 尚未到達階段
           circle.className = "w-14 h-14 md:w-16 md:h-16 rounded-full bg-white text-stone-400 border-2 border-stone-300 flex items-center justify-center transition-all duration-300 hover:border-stone-400";
           label.className = "text-base font-bold tracking-tight text-stone-400 transition-colors duration-300";
         }
@@ -422,7 +496,7 @@
       // 更新預計送達時間區塊
       document.getElementById('eta-title').innerText = stage.etaTitle;
       document.getElementById('eta-time').innerText = stage.getEtaText(activeOrder.deliverBy || "12:15");
-      document.getElementById('eta-desc').innerText = stage.desc;
+      document.getElementById('eta-desc').innerText = stage.getDesc(activeOrder.accepted);
 
       lucide.createIcons();
     }

@@ -47,10 +47,10 @@
     
     <!-- 頂部品牌與主控台狀態導覽列 (嚴格使用：大 text-xl、中 text-base、小 text-xs) -->
     <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 shadow-xs">
-      <div class="max-w-xl md:max-w-5xl xl:max-w-[1440px] mx-auto px-4 md:px-6 min-h-16 md:min-h-20 py-2.5 md:py-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 min-h-16 md:min-h-20 py-2.5 md:py-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         
         <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
-        <a href="code_artifact.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
+        <a href="index.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
           <img src="CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
           <div class="shrink-0 whitespace-nowrap">
             <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
@@ -331,120 +331,218 @@
       </div>
     </main>
 
-    <!-- 頁尾 (小 text-xs) -->
-    <footer class="w-full text-center py-3 text-xs text-stone-600">
-      <p>© 來電送 • 後端管理主控台</p>
+    <!-- 頁尾 (小 text-xs)：角色切換小字連結與重置預設資料按鈕 -->
+    <footer class="w-full text-center py-4 px-4 text-xs text-stone-500 border-t border-stone-200/50 bg-white/50 space-y-1.5">
+      <div class="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+        <span>© 來電送 • 後端管理主控台</span>
+        <span class="text-stone-300">|</span>
+        <a href="index.html" class="hover:text-brick hover:underline">顧客首頁</a>
+        <span>·</span>
+        <a href="user_order_track.html" class="hover:text-brick hover:underline">訂單追蹤</a>
+        <span>·</span>
+        <a href="order_accept.html" class="hover:text-brick hover:underline">店家接單</a>
+        <span>·</span>
+        <a href="controller.html" class="text-brick font-bold hover:underline">後台主控台</a>
+        <span class="text-stone-300">|</span>
+        <button onclick="resetSharedPrototypeData()" class="text-stone-400 hover:text-brick underline-offset-2 hover:underline cursor-pointer">重置預設測試資料</button>
+      </div>
     </footer>
   </div>
 
   <!-- ========================================================= -->
-  <!-- JavaScript: 店家管理、顧客黑名單權限與後台文案編輯邏輯    -->
+  <!-- JavaScript: 全站共用狀態同步、店家/顧客黑名單/後台編輯邏輯 -->
   <!-- ========================================================= -->
   <script>
-    // 1. 店家資料 Mock Data (對應手繪稿：音樂、時間、門檻、權限)
-    const storesAdminData = [
-      {
-        id: 1,
-        name: "禾風堂手作便當",
-        soundAlert: "叮咚和弦",
-        soundEnabled: true,
-        hours: "10:30 - 13:30",
-        minOrder: "滿 3 份送",
-        active: true
-      },
-      {
-        id: 2,
-        name: "築地漁火日式定食",
-        soundAlert: "叮咚和弦",
-        soundEnabled: true,
-        hours: "11:00 - 14:00",
-        minOrder: "滿 2 份送",
-        active: true
-      },
-      {
-        id: 3,
-        name: "青嵐健康水煮餐",
-        soundAlert: "靜音提示",
-        soundEnabled: false,
-        hours: "10:30 - 13:00",
-        minOrder: "滿 2 份送",
-        active: true
-      }
-    ];
+    const SHARED_STORAGE_KEY = 'laidiansong_shared_state_v1';
 
-    // 2. 顧客資料 Mock Data (對應手繪稿：who、TEL、訂單、棄單紀錄與黑名單權限)
-    const customersAdminData = [
-      {
-        id: 1,
-        name: "王小明",
-        tel: "0912-345-678",
-        orders: ["#101", "#102", "#103"],
-        abandonedCount: 0,
-        blacklisted: false
-      },
-      {
-        id: 2,
-        name: "林雅婷",
-        tel: "0928-666-888",
-        orders: ["#102"],
-        abandonedCount: 0,
-        blacklisted: false
-      },
-      {
-        id: 3,
-        name: "陳建宏",
-        tel: "0933-111-222",
-        orders: ["#103"],
-        abandonedCount: 1,
-        blacklisted: false
-      },
-      {
-        id: 4,
-        name: "張志豪",
-        tel: "0955-999-000",
-        orders: ["#089", "#094"],
-        abandonedCount: 3,
-        blacklisted: true
-      }
-    ];
+    function getDefaultSharedState() {
+      return {
+        activeOrderId: "#101",
+        stores: [
+          {
+            id: 1,
+            name: "禾風堂手作便當",
+            soundAlert: "叮咚和弦",
+            soundEnabled: true,
+            hours: "10:30 - 13:30",
+            minOrder: "滿 3 份送",
+            minQty: 3,
+            active: true
+          },
+          {
+            id: 2,
+            name: "築地漁火日式定食",
+            soundAlert: "叮咚和弦",
+            soundEnabled: true,
+            hours: "11:00 - 14:00",
+            minOrder: "滿 2 份送",
+            minQty: 2,
+            active: true
+          },
+          {
+            id: 3,
+            name: "青嵐健康水煮餐",
+            soundAlert: "靜音提示",
+            soundEnabled: false,
+            hours: "10:30 - 13:00",
+            minOrder: "滿 2 份送",
+            minQty: 2,
+            active: true
+          }
+        ],
+        customers: [
+          {
+            id: 1,
+            name: "王小明",
+            tel: "0912-345-678",
+            orders: ["#101", "#102", "#103"],
+            abandonedCount: 0,
+            blacklisted: false
+          },
+          {
+            id: 2,
+            name: "林雅婷",
+            tel: "0928-666-888",
+            orders: ["#102"],
+            abandonedCount: 0,
+            blacklisted: false
+          },
+          {
+            id: 3,
+            name: "陳建宏",
+            tel: "0933-111-222",
+            orders: ["#103"],
+            abandonedCount: 1,
+            blacklisted: false
+          },
+          {
+            id: 4,
+            name: "張志豪",
+            tel: "0955-999-000",
+            orders: ["#089", "#094"],
+            abandonedCount: 3,
+            blacklisted: true
+          }
+        ],
+        orders: [
+          {
+            orderId: "#101",
+            storeId: 1,
+            storeName: "禾風堂手作便當",
+            deliverBy: "12:15",
+            address: "台北市信義區松高路 11 號 5 樓",
+            customerName: "王小明",
+            customerPhone: "0912-345-678",
+            accepted: false,
+            step: 0,
+            items: [
+              { name: "秘傳酥炸排骨便當", qty: 2, price: 120 },
+              { name: "蜜汁香烤大雞腿飯", qty: 1, price: 135 }
+            ]
+          },
+          {
+            orderId: "#102",
+            storeId: 2,
+            storeName: "築地漁火日式定食",
+            deliverBy: "12:30",
+            address: "台北市大安區敦化南路一段 188 號 10 樓",
+            customerName: "林雅婷",
+            customerPhone: "0928-666-888",
+            accepted: true,
+            step: 1,
+            items: [
+              { name: "極上炙燒鮭魚腹丼", qty: 2, price: 180 },
+              { name: "和風醬烤鯖魚定食", qty: 2, price: 160 }
+            ]
+          },
+          {
+            orderId: "#103",
+            storeId: 3,
+            storeName: "青嵐健康水煮餐",
+            deliverBy: "12:00",
+            address: "台北市松山區民生東路三段 128 號 3 樓",
+            customerName: "陳建宏",
+            customerPhone: "0933-111-222",
+            accepted: true,
+            step: 2,
+            items: [
+              { name: "義式香草舒肥雞胸餐", qty: 3, price: 130 },
+              { name: "水煮嫩煎板腱牛便當", qty: 1, price: 165 }
+            ]
+          }
+        ],
+        cmsDocs: [
+          {
+            key: "terms",
+            shortLabel: "條款",
+            fullTitle: "服務條款",
+            updatedAt: "2026/10/21 16:30",
+            content: "1. 訂單確認規範：顧客透過「來電送」送出訂單並經電話確認後，店家即刻開始備餐，恕不接受臨時改單或無故棄單。\n2. 棄單黑名單機制：若顧客累計無故棄單或拒收達 2 次（含）以上，系統管理員有權將該電話號碼列為黑名單並取消其訂餐權限。\n3. 準時專送承諾：合作店家均享免外送費門檻優惠，並於指定午餐時段準時送達。"
+          },
+          {
+            key: "support",
+            shortLabel: "客服說明",
+            fullTitle: "客服說明",
+            updatedAt: "2026/10/21 16:35",
+            content: "【來電送客服中心】\n• 服務專線：02-2345-6789\n• 服務時段：週一至週五 09:30 - 18:00\n• 緊急訂單協助：若餐點逾時超過 15 分鐘或品項有誤，請直接撥打店家專線或聯繫線上客服，我們將立即為您追蹤處理。"
+          },
+          {
+            key: "intro",
+            shortLabel: "使用介紹",
+            fullTitle: "使用介紹",
+            updatedAt: "2026/10/21 16:40",
+            content: "歡迎使用「來電送 CALL & DELIVER」午間專送平台：\n步驟 1：於首頁輪播瀏覽今日熱門便當與定食推薦。\n步驟 2：進入店家菜單頁選購餐點（達最低外送份數即享免外送費）。\n步驟 3：點擊「確認來電訂餐」完成撥號確認。\n步驟 4：於「訂單即時配送進度」頁面隨時查看【店家接單 → 已製作完成 → 已送達】三階段狀態。"
+          },
+          {
+            key: "faq",
+            shortLabel: "常用問答",
+            fullTitle: "常用問答 (FAQ)",
+            updatedAt: "2026/10/21 16:45",
+            content: "Q1：請問外送需要運費嗎？\nA1：只要湊滿該店家指定的最低外送份數（例如滿 2 份或 3 份），全面享免外送費！\n\nQ2：為什麼我的帳號無法下單？\nA2：若曾有多次未接電話或棄單紀錄，帳號將被系統列入黑名單停權；如需申訴復權請聯繫客服專線。\n\nQ3：可以同時訂購不同店家的餐點嗎？\nA3：可以！您可以在訂單追蹤頁面透過上方單號（如 #101、#102）切換查看每張訂單的獨立配送進度。"
+          }
+        ]
+      };
+    }
 
-    // 3. 後台編輯 4 大分類文案資料 (對應手繪稿：條款、客服說明、使用介紹、常用問答)
-    const cmsDocsData = [
-      {
-        key: "terms",
-        shortLabel: "條款",
-        fullTitle: "服務條款",
-        updatedAt: "2026/10/21 16:30",
-        content: "1. 訂單確認規範：顧客透過「來電送」送出訂單並經電話確認後，店家即刻開始備餐，恕不接受臨時改單或無故棄單。\n2. 棄單黑名單機制：若顧客累計無故棄單或拒收達 2 次（含）以上，系統管理員有權將該電話號碼列為黑名單並取消其訂餐權限。\n3. 準時專送承諾：合作店家均享免外送費門檻優惠，並於指定午餐時段準時送達。"
-      },
-      {
-        key: "support",
-        shortLabel: "客服說明",
-        fullTitle: "客服說明",
-        updatedAt: "2026/10/21 16:35",
-        content: "【來電送客服中心】\n• 服務專線：02-2345-6789\n• 服務時段：週一至週五 09:30 - 18:00\n• 緊急訂單協助：若餐點逾時超過 15 分鐘或品項有誤，請直接撥打店家專線或聯繫線上客服，我們將立即為您追蹤處理。"
-      },
-      {
-        key: "intro",
-        shortLabel: "使用介紹",
-        fullTitle: "使用介紹",
-        updatedAt: "2026/10/21 16:40",
-        content: "歡迎使用「來電送 CALL & DELIVER」午間專送平台：\n步驟 1：於首頁輪播瀏覽今日熱門便當與定食推薦。\n步驟 2：進入店家菜單頁選購餐點（達最低外送份數即享免外送費）。\n步驟 3：點擊「確認來電訂餐」完成撥號確認。\n步驟 4：於「訂單即時配送進度」頁面隨時查看【店家接單 → 已製作完成 → 已送達】三階段狀態。"
-      },
-      {
-        key: "faq",
-        shortLabel: "常用問答",
-        fullTitle: "常用問答 (FAQ)",
-        updatedAt: "2026/10/21 16:45",
-        content: "Q1：請問外送需要運費嗎？\nA1：只要湊滿該店家指定的最低外送份數（例如滿 2 份或 3 份），全面享免外送費！\n\nQ2：為什麼我的帳號無法下單？\nA2：若曾有多次未接電話或棄單紀錄，帳號將被系統列入黑名單停權；如需申訴復權請聯繫客服專線。\n\nQ3：可以同時訂購不同店家的餐點嗎？\nA3：可以！您可以在訂單追蹤頁面透過上方單號（如 #101、#102）切換查看每張訂單的獨立配送進度。"
-      }
-    ];
+    function loadSharedState() {
+      try {
+        const raw = localStorage.getItem(SHARED_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.stores && parsed.customers && parsed.orders && parsed.cmsDocs) {
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      const def = getDefaultSharedState();
+      saveSharedState(def);
+      return def;
+    }
+
+    function saveSharedState(state) {
+      try {
+        localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    let sharedState = loadSharedState();
+    let storesAdminData = sharedState.stores;
+    let customersAdminData = sharedState.customers;
+    let cmsDocsData = sharedState.cmsDocs;
 
     let currentMainTab = 'stores';
     let currentCmsIdx = 0;
     let isEditingCms = false;
 
+    function syncDataRefs() {
+      sharedState = loadSharedState();
+      storesAdminData = sharedState.stores;
+      customersAdminData = sharedState.customers;
+      cmsDocsData = sharedState.cmsDocs;
+    }
+
     function initController() {
+      syncDataRefs();
       renderStoresTable();
       renderCustomersTable();
       renderCmsNav();
@@ -452,6 +550,32 @@
       updateTopStats();
       switchMainTab('stores');
       lucide.createIcons();
+
+      // 跨分頁即時監聽：當前台顧客下新訂單時，後台顧客訂單列表自動更新
+      window.addEventListener('storage', (e) => {
+        if (e.key === SHARED_STORAGE_KEY) {
+          syncDataRefs();
+          renderStoresTable();
+          renderCustomersTable();
+          if (!isEditingCms) {
+            renderCmsNav();
+            renderCmsContent();
+          }
+          updateTopStats();
+        }
+      });
+    }
+
+    function resetSharedPrototypeData() {
+      const def = getDefaultSharedState();
+      saveSharedState(def);
+      syncDataRefs();
+      renderStoresTable();
+      renderCustomersTable();
+      renderCmsNav();
+      renderCmsContent();
+      updateTopStats();
+      showToast("已重置全站預設測試資料");
     }
 
     // 主控台三大頁籤切換：[店家資料 (stores) | 顧客資料 (customers) | 後台編輯 (cms)]
@@ -547,15 +671,17 @@
 
     function toggleStoreSound(idx) {
       storesAdminData[idx].soundEnabled = !storesAdminData[idx].soundEnabled;
+      saveSharedState(sharedState);
       renderStoresTable();
-      showToast(`已將「${storesAdminData[idx].name}」通知音效設為${storesAdminData[idx].soundEnabled ? '開啟' : '靜音'}`);
+      showToast(`已將「${storesAdminData[idx].name}」通知音效設為${storesAdminData[idx].soundEnabled ? '開啟' : '靜音'}（已同步店家接單頁）`);
     }
 
     function toggleStoreActive(idx) {
       storesAdminData[idx].active = !storesAdminData[idx].active;
+      saveSharedState(sharedState);
       renderStoresTable();
       updateTopStats();
-      showToast(`已將「${storesAdminData[idx].name}」權限改為${storesAdminData[idx].active ? '正常接單' : '停權狀態'}`);
+      showToast(`已將「${storesAdminData[idx].name}」權限改為${storesAdminData[idx].active ? '正常接單' : '停權狀態'}（已同步前台首頁）`);
     }
 
     // ================= 2. 渲染顧客資料表格 (含棄單紀錄與黑名單權限切換) =================
@@ -571,6 +697,10 @@
           : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200";
         const statusLabel = cust.blacklisted ? "🚫 黑名單 (解除)" : "✓ 正常 (設黑名單)";
 
+        const orderLinks = cust.orders.map(ordId => {
+          return `<button onclick="jumpToOrder('${ordId}')" class="underline-offset-2 hover:underline cursor-pointer">${ordId}</button>`;
+        }).join(', ');
+
         return `
           <tr class="${cust.blacklisted ? 'bg-red-50/50' : ''}">
             <td class="py-3 pr-2 align-top">
@@ -583,8 +713,11 @@
               ${cust.tel}
             </td>
             <td class="py-3 px-2 align-top">
-              <div class="font-mono font-bold text-brick">${cust.orders.join(', ')}</div>
-              <div class="mt-0.5">${abandonBadge}</div>
+              <div class="font-mono font-bold text-brick">${orderLinks}</div>
+              <div class="mt-0.5 flex items-center gap-1.5">
+                ${abandonBadge}
+                <button onclick="recordAbandon(${idx})" class="px-1.5 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold cursor-pointer" title="記錄一次棄單">+棄單</button>
+              </div>
             </td>
             <td class="py-3 pl-2 align-top text-right whitespace-nowrap">
               <button onclick="toggleCustomerBlacklist(${idx})" class="px-2.5 py-1 rounded-lg border text-xs font-bold transition active:scale-95 cursor-pointer ${statusBtnClass}">
@@ -597,15 +730,36 @@
       lucide.createIcons();
     }
 
+    function jumpToOrder(orderId) {
+      sharedState.activeOrderId = orderId;
+      saveSharedState(sharedState);
+      window.location.href = 'user_order_track.html';
+    }
+
+    function recordAbandon(idx) {
+      const cust = customersAdminData[idx];
+      cust.abandonedCount = (cust.abandonedCount || 0) + 1;
+      if (cust.abandonedCount >= 2 && !cust.blacklisted) {
+        cust.blacklisted = true;
+        showToast(`顧客「${cust.name}」累計棄單達 ${cust.abandonedCount} 次，已自動列入黑名單停權`);
+      } else {
+        showToast(`已記錄顧客「${cust.name}」棄單 1 次（累計 ${cust.abandonedCount} 次）`);
+      }
+      saveSharedState(sharedState);
+      renderCustomersTable();
+      updateTopStats();
+    }
+
     function toggleCustomerBlacklist(idx) {
       const cust = customersAdminData[idx];
       cust.blacklisted = !cust.blacklisted;
+      saveSharedState(sharedState);
       renderCustomersTable();
       updateTopStats();
       if (cust.blacklisted) {
-        showToast(`已將顧客「${cust.name}」列入黑名單，禁止其使用訂餐權限`);
+        showToast(`已將顧客「${cust.name}」列入黑名單，前台已禁止其使用訂餐權限`);
       } else {
-        showToast(`已解除顧客「${cust.name}」的黑名單限制，恢復正常權限`);
+        showToast(`已解除顧客「${cust.name}」的黑名單限制，恢復正常訂餐權限`);
       }
     }
 
@@ -653,7 +807,7 @@
         editBox.classList.remove('hidden');
         btnCancel.classList.remove('hidden');
         btnEdit.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>儲存</span>`;
-        btnEdit.className = "px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition active:scale-95 flex items-center gap-1 cursor-pointer";
+        btnEdit.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer";
         modeHint.innerText = "編輯模式中";
         modeHint.className = "font-bold text-brick";
         editBox.focus();
@@ -662,7 +816,7 @@
         editBox.classList.add('hidden');
         btnCancel.classList.add('hidden');
         btnEdit.innerHTML = `<i data-lucide="pen-line" class="w-3.5 h-3.5"></i><span>Edit</span>`;
-        btnEdit.className = "px-3 py-1 rounded-lg text-xs font-bold bg-brick text-white hover:bg-brick-dark shadow-xs transition active:scale-95 flex items-center gap-1 cursor-pointer";
+        btnEdit.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brick text-white hover:bg-brick-dark shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer";
         modeHint.innerText = "檢視模式";
         modeHint.className = "font-bold text-stone-500";
       }
@@ -675,15 +829,15 @@
         isEditingCms = true;
         renderCmsContent();
       } else {
-        // 儲存修改內容
         const newVal = document.getElementById('cms-edit-textarea').value.trim();
         doc.content = newVal || doc.content;
         const now = new Date();
         const pad = (n) => String(n).padStart(2, '0');
         doc.updatedAt = `${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
         isEditingCms = false;
+        saveSharedState(sharedState);
         renderCmsContent();
-        showToast(`已儲存「${doc.fullTitle}」修改內容`);
+        showToast(`已儲存「${doc.fullTitle}」修改內容並同步至前台首頁`);
       }
     }
 
