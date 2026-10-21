@@ -73,14 +73,13 @@ function updateCarousel() {
   $('#carousel-desc').innerText = item.desc;
   $('#carousel-price').innerText = item.price;
   $('#carousel-rating').innerText = item.rating;
-  $('#carousel-time').innerHTML = `<i data-lucide="clock" class="w-3.5 h-3.5"></i> ${escapeHtml(item.deliverTime)}`;
+  $('#carousel-time').innerHTML = `<i data-lucide="clock" class="icon icon--xs"></i> ${escapeHtml(item.deliverTime)}`;
   $('#carousel-min').innerText = item.minQtyText;
   $('#carousel-indicator').innerText = `${currentSlide + 1} / ${restaurantsData.length}`;
 
   $$('.indicator-bar').forEach((bar, idx) => {
-    bar.className = idx === currentSlide
-      ? 'h-1.5 rounded-full transition-all duration-300 indicator-bar w-8 bg-brick'
-      : 'h-1.5 rounded-full transition-all duration-300 indicator-bar w-3 bg-stone-200';
+    bar.classList.toggle('is-active', idx === currentSlide);
+    bar.setAttribute('aria-current', idx === currentSlide ? 'true' : 'false');
   });
 
   refreshIcons();
@@ -143,10 +142,10 @@ function refreshDetailView() {
   const statusTag = $('#detail-store-status-tag');
   if (currentRestaurant.active) {
     statusTag.innerText = '免外送費';
-    statusTag.className = 'text-xs bg-white text-stone-600 px-2.5 py-1 rounded-md border border-stone-200 font-bold';
+    statusTag.className = 'tag tag--outline';
   } else {
     statusTag.innerText = '已停權暫停接單';
-    statusTag.className = 'text-xs bg-red-50 text-red-600 px-2.5 py-1 rounded-md border border-red-200 font-bold';
+    statusTag.className = 'tag tag--danger';
   }
 
   const state = getState();
@@ -158,8 +157,8 @@ function refreshDetailView() {
       ? `訂餐人：${activeCustomer.name} (🚫黑名單)`
       : `訂餐人：${activeCustomer.name}`;
     custHint.className = activeCustomer.blacklisted
-      ? 'text-xs font-bold text-red-600'
-      : 'text-xs font-bold text-stone-500';
+      ? 'section-note u-text-danger'
+      : 'section-note';
   }
 
   renderDetailMenu();
@@ -187,21 +186,21 @@ function renderDetailMenu() {
   container.innerHTML = currentRestaurant.menu.map(item => {
     const qty = cart[item.id] || 0;
     return `
-      <div class="bg-white rounded-2xl p-3 md:p-4 border border-stone-100 flex items-center gap-3 md:gap-4 shadow-xs ${currentRestaurant.active ? '' : 'opacity-60'}">
-        <div class="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden shrink-0 bg-stone-100">
-          <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}" class="w-full h-full object-cover">
+      <div class="menu-item ${currentRestaurant.active ? '' : 'is-disabled'}">
+        <div class="menu-item__thumb">
+          <img src="${escapeHtml(item.img)}" alt="${escapeHtml(item.name)}" class="menu-item__img">
         </div>
-        <div class="flex-1 min-w-0">
-          <h4 class="font-bold text-stone-900 text-xs md:text-base truncate">${escapeHtml(item.name)}</h4>
-          <p class="text-xs text-stone-600 line-clamp-1 mt-0.5">${escapeHtml(item.desc)}</p>
-          <div class="flex items-center justify-between mt-1.5 md:mt-2.5">
-            <span class="text-xs md:text-base font-black text-brick font-mono">NT$ ${item.price}</span>
-            <div class="flex items-center gap-2 md:gap-2.5">
-              <button data-action="change-qty" data-item-id="${item.id}" data-delta="-1" class="w-6 h-6 md:w-7 md:h-7 rounded-md bg-stone-100 text-stone-700 flex items-center justify-center font-bold text-xs active:bg-stone-200 transition cursor-pointer">
-                -
+        <div class="menu-item__body">
+          <h4 class="menu-item__name">${escapeHtml(item.name)}</h4>
+          <p class="menu-item__desc">${escapeHtml(item.desc)}</p>
+          <div class="menu-item__foot">
+            <span class="menu-item__price">NT$ ${item.price}</span>
+            <div class="menu-item__qty">
+              <button type="button" data-action="change-qty" data-item-id="${item.id}" data-delta="-1" class="qty-btn qty-btn--minus" aria-label="減少 ${escapeHtml(item.name)} 數量">
+                −
               </button>
-              <span id="qty-val-${item.id}" class="w-4 md:w-5 text-center text-xs font-bold text-stone-800">${qty}</span>
-              <button data-action="change-qty" data-item-id="${item.id}" data-delta="1" class="w-6 h-6 md:w-7 md:h-7 rounded-md bg-brick text-white flex items-center justify-center font-bold text-xs active:bg-brick-dark transition shadow-xs cursor-pointer">
+              <span id="qty-val-${item.id}" class="qty-value">${qty}</span>
+              <button type="button" data-action="change-qty" data-item-id="${item.id}" data-delta="1" class="qty-btn qty-btn--plus" aria-label="增加 ${escapeHtml(item.name)} 數量">
                 +
               </button>
             </div>
@@ -269,9 +268,15 @@ function updateCartUI() {
   const btnBuy = $('#btn-buy');
   const btnBuyText = $('#btn-buy-text');
 
+  // 按鈕狀態以修飾子切換，不再逐次拼字串
+  const setBuyState = (state) => {
+    btnBuy.classList.remove('btn--primary', 'btn--warning', 'btn--disabled');
+    btnBuy.classList.add(state);
+  };
+
   if (!currentRestaurant.active) {
     btnBuy.disabled = true;
-    btnBuy.className = 'flex-1 md:max-w-sm bg-stone-300 text-stone-500 font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 cursor-not-allowed';
+    setBuyState('btn--disabled');
     btnBuyText.innerText = '店家目前已暫停接單';
     warning.classList.add('hidden');
     return;
@@ -279,7 +284,7 @@ function updateCartUI() {
 
   if (isOutOfRange) {
     btnBuy.disabled = true;
-    btnBuy.className = 'flex-1 md:max-w-sm bg-stone-300 text-stone-500 font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 cursor-not-allowed';
+    setBuyState('btn--disabled');
     btnBuyText.innerText = '超出外送範圍無法下單';
     warning.classList.add('hidden');
     return;
@@ -287,19 +292,19 @@ function updateCartUI() {
 
   if (count === 0) {
     btnBuy.disabled = false;
-    btnBuy.className = 'flex-1 md:max-w-sm bg-brick hover:bg-brick-dark text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 active:scale-[0.98] transition cursor-pointer';
+    setBuyState('btn--primary');
     btnBuyText.innerText = `選購餐點 (${currentRestaurant.minQtyText})`;
     warning.classList.add('hidden');
   } else if (count < currentRestaurant.minQty) {
     const diff = currentRestaurant.minQty - count;
     btnBuy.disabled = false;
-    btnBuy.className = 'flex-1 md:max-w-sm bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition cursor-pointer';
+    setBuyState('btn--warning');
     btnBuyText.innerText = `還差 ${diff} 份起送`;
     $('#need-more-count').innerText = diff;
     warning.classList.remove('hidden');
   } else {
     btnBuy.disabled = false;
-    btnBuy.className = 'flex-1 md:max-w-sm bg-brick hover:bg-brick-dark text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 active:scale-[0.98] transition cursor-pointer';
+    setBuyState('btn--primary');
     btnBuyText.innerText = `確認來電訂餐 (${count} 份)`;
     warning.classList.add('hidden');
   }
@@ -359,15 +364,15 @@ function onCustomerSelectChange() {
   const callBtn = $('#modal-call-btn');
 
   if (customer && customer.blacklisted) {
-    alertBox.className = 'text-xs text-red-700 font-bold mb-4 bg-red-50 py-2 px-3 rounded-lg border border-red-200';
+    alertBox.className = 'alert alert--danger';
     alertBox.innerText = `🚫 顧客「${customer.name}」因多次棄單紀錄（累計 ${customer.abandonedCount} 次），已被後台列入黑名單禁止訂餐！`;
     callBtn.disabled = true;
-    callBtn.className = 'flex-1 py-2.5 md:py-3 bg-stone-300 text-stone-500 font-bold rounded-xl text-base flex items-center justify-center gap-1.5 cursor-not-allowed';
+    callBtn.className = 'btn btn--disabled btn--sm-flex';
   } else {
-    alertBox.className = 'text-xs text-amber-600 font-bold mb-4 bg-amber-50 py-1.5 px-2.5 rounded-lg border border-amber-100';
+    alertBox.className = 'alert alert--warning alert--warning-lg';
     alertBox.innerText = '📌 提醒：送出即不可改單/棄單。';
     callBtn.disabled = false;
-    callBtn.className = 'flex-1 py-2.5 md:py-3 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer';
+    callBtn.className = 'btn btn--primary btn--sm-flex';
   }
 
   refreshDetailView();
@@ -411,11 +416,11 @@ function handleBuyClick() {
   }
 
   $('#modal-desc').innerHTML = `
-    <div class="space-y-1">
-      <div><span class="text-stone-500">店家：</span><b class="text-stone-900">${escapeHtml(currentRestaurant.name)}</b></div>
-      <div><span class="text-stone-500">門市地址：</span><span class="text-stone-800">${escapeHtml(currentRestaurant.address)}</span></div>
-      <div><span class="text-stone-500">訂購品項：</span><span class="text-stone-800">${escapeHtml(itemNames.join('、'))}</span></div>
-      <div class="pt-1 text-base font-black text-brick">總計金額：NT$ ${total} (免外送費)</div>
+    <div class="order-summary">
+      <div><span class="order-summary__label">店家：</span><b class="order-summary__value u-strong">${escapeHtml(currentRestaurant.name)}</b></div>
+      <div><span class="order-summary__label">門市地址：</span><span class="order-summary__value">${escapeHtml(currentRestaurant.address)}</span></div>
+      <div><span class="order-summary__label">訂購品項：</span><span class="order-summary__value">${escapeHtml(itemNames.join('、'))}</span></div>
+      <div class="order-summary__total">總計金額：NT$ ${total} (免外送費)</div>
     </div>
   `;
 
@@ -504,10 +509,8 @@ function openCmsInfoModal(docKey) {
 
   $('#modal-cms-tabs').innerHTML = docs.map(d => {
     const active = d.key === doc.key;
-    const cls = active
-      ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-brick text-white cursor-pointer'
-      : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 cursor-pointer';
-    return `<button data-action="open-cms" data-key="${escapeHtml(d.key)}" class="${cls}">${escapeHtml(d.shortLabel)}</button>`;
+    const cls = active ? 'cms-tab is-active' : 'cms-tab';
+    return `<button type="button" data-action="open-cms" data-key="${escapeHtml(d.key)}" class="${cls}">${escapeHtml(d.shortLabel)}</button>`;
   }).join('');
 
   $('#modal-cms-info').classList.remove('hidden');

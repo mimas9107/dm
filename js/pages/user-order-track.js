@@ -69,10 +69,8 @@ function renderOrderTabs() {
 
   container.innerHTML = userOrdersData.map((order, idx) => {
     const isActive = idx === currentOrderIdx;
-    const btnClass = isActive
-      ? 'px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95 cursor-pointer'
-      : 'px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95 cursor-pointer';
-    return `<button data-action="switch-user-order" data-index="${idx}" class="${btnClass}">${escapeHtml(order.orderId)}</button>`;
+    const btnClass = isActive ? 'order-tab is-active' : 'order-tab';
+    return `<button type="button" data-action="switch-user-order" data-index="${idx}" class="${btnClass}" aria-selected="${isActive}">${escapeHtml(order.orderId)}</button>`;
   }).join('');
 }
 
@@ -105,9 +103,9 @@ function renderActiveOrder() {
     const subtotal = item.qty * item.price;
     total += subtotal;
     return `
-      <div class="flex items-center justify-between">
+      <div class="summary-item">
         <span>${escapeHtml(item.name)} × ${item.qty}</span>
-        <span class="font-mono text-stone-600">NT$ ${subtotal}</span>
+        <span class="summary-item__price">NT$ ${subtotal}</span>
       </div>
     `;
   }).join('');
@@ -148,13 +146,13 @@ function applyTrackStepUI(stepIdx) {
   const badge = $('#track-stage-badge');
   if (stepIdx === 0 && !activeOrder.accepted) {
     badge.innerText = '待店家接單確認';
-    badge.className = 'text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200';
+    badge.className = 'tag tag--warning';
   } else if (stepIdx === 2) {
     badge.innerText = stage.label;
-    badge.className = 'text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200';
+    badge.className = 'tag tag--success';
   } else {
     badge.innerText = stage.label;
-    badge.className = 'text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md border border-red-200/60';
+    badge.className = 'tag tag--brand';
   }
 
   // 進度條填色寬度 (0% -> 50% -> 100%)
@@ -175,15 +173,11 @@ function applyTrackStepUI(stepIdx) {
     const label = document.getElementById(`step-label-${i}`);
     if (!circle || !label) continue;
 
-    if (i < stepIdx) {
-      circle.className = 'w-14 h-14 md:w-16 md:h-16 rounded-full bg-brick text-white border-2 border-brick flex items-center justify-center transition-all duration-300 shadow-sm';
-      label.className = 'text-base font-black tracking-tight text-brick transition-colors duration-300';
-    } else if (i === stepIdx) {
-      circle.className = 'w-14 h-14 md:w-16 md:h-16 rounded-full bg-brick text-white border-4 border-red-200 flex items-center justify-center transition-all duration-300 shadow-lg shadow-red-950/20 scale-105';
-      label.className = 'text-base font-black tracking-tight text-brick transition-colors duration-300';
-    } else {
-      circle.className = 'w-14 h-14 md:w-16 md:h-16 rounded-full bg-white text-stone-400 border-2 border-stone-300 flex items-center justify-center transition-all duration-300 hover:border-stone-400';
-      label.className = 'text-base font-bold tracking-tight text-stone-400 transition-colors duration-300';
+    const node = circle.closest('.step-node');
+    if (node) {
+      node.classList.toggle('is-done', i < stepIdx);
+      node.classList.toggle('is-current', i === stepIdx);
+      node.setAttribute('aria-current', i === stepIdx ? 'step' : 'false');
     }
   }
 
@@ -202,14 +196,18 @@ function toggleOrderSummary() {
   summaryExpanded = !summaryExpanded;
   const panel = $('#order-summary-panel');
   const chevron = $('#summary-chevron');
+  const toggle = $('.summary-toggle');
   if (!panel || !chevron) return;
 
   if (summaryExpanded) {
     panel.classList.remove('hidden');
-    chevron.classList.add('rotate-180');
+    chevron.classList.add('is-open');
   } else {
     panel.classList.add('hidden');
-    chevron.classList.remove('rotate-180');
+    chevron.classList.remove('is-open');
+  }
+  if (toggle) {
+    toggle.setAttribute('aria-expanded', summaryExpanded ? 'true' : 'false');
   }
 }
 

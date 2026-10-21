@@ -3,14 +3,14 @@ name: "README.md"
 description: "來電送 CALL & DELIVER — 午間專送平台前端"
 created_date: "2026/10/21"
 modified_date: "2026/10/22"
-project_version: "1.1.0"
-document_version: "1.0.1"
+project_version: "2.0.0"
+document_version: "2.0.0"
 agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 ---
 
 # 來電送 CALL & DELIVER
 
-午間專送外送平台 — 前端 B 組（純前端原型，零後端、零建置工具）。
+午間專送外送平台 — 前端 B 組（純前端原型，零後端、零建置工具、**零 CSS 框架**）。
 
 顧客下單 → 店家接單 → 三階段配送追蹤，並由主控台管理店家權限、顧客黑名單與平台條款。
 四個頁面透過 `localStorage` + `storage` 事件達成**跨分頁即時同步**。
@@ -59,7 +59,7 @@ dm/
 │   └── CoDeliver-logo-1020x1020px-20261021.svg
 │
 ├── css/
-│   ├── base.css                全站共用樣式
+│   ├── base.css                全站共用樣式（設計權杖 + 重置 + 共用元件 + 工具類）
 │   └── pages/                  各頁專屬樣式
 │       ├── index.css
 │       ├── order-accept.css
@@ -68,7 +68,6 @@ dm/
 │
 ├── js/
 │   ├── core/                   跨頁共用模組
-│   │   ├── tailwind-config.js  Tailwind 主題設定（classic script，勿改成 module）
 │   │   ├── file-protocol-guard.js  file:// 開啟守衛（classic script）
 │   │   ├── seed-data.js        種子資料單一真相來源
 │   │   ├── store.js            共用狀態庫單一真相來源
@@ -81,27 +80,51 @@ dm/
 │       └── controller.js
 │
 ├── tests/
-│   ├── smoke.mjs                headless Chrome 回歸測試
-│   └── class-audit.mjs          class 屬性稽核工具
+│   └── smoke.mjs                headless Chrome 回歸測試
 │
 ├── serve.sh                    一鍵啟動本地伺服器
 ├── PLAN.md                     重構設計依據
 ├── TASK.md                     重構執行任務表
-├── CLASS-AUDIT.md              各頁面 class 屬性分析總整理
+├── CLASS-AUDIT.md              Tailwind 時代的 class 稽核歷史紀錄（v1.1.0）
 └── CHANGELOG.md                變更紀錄（版本單一事實來源）
 ```
+
+### 樣式架構
+
+**沒有任何 CSS 框架**。樣式僅兩層，全部手寫：
+
+| 檔案 | 職責 |
+|---|---|
+| `css/base.css` | 設計權杖（CSS 自訂屬性）、重置、基礎元素、版面外殼、共用元件、`.u-*` 工具類 |
+| `css/pages/<page>.css` | 僅該頁使用的區塊樣式 |
+
+**命名約定**
+
+- 區塊用語意名（`.carousel`、`.menu-item`、`.order-card`）
+- 修飾子與子元素用 `--` / `__`（`.btn--primary`、`.carousel__media`）
+- 狀態用 `.is-*`（`.is-active`、`.is-done`、`.is-current`、`.is-disabled`）
+- 通用工具類一律加 `.u-` 前綴（`.u-mono`、`.u-truncate`、`.u-text-muted`）
+- **元件規則內不得出現硬編色碼**，一律引用 `base.css` 的權杖
+
+**加入新樣式的流程**
+
+1. 該樣式只有一頁用到 → 寫進 `css/pages/<page>.css`
+2. 兩頁以上會用到 → 寫進 `css/base.css` 的「共用元件」段
+3. 需要新顏色／間距／圓角 → 先在 `base.css` 的「1. 設計權杖」定義變數，再引用
 
 ---
 
 ## 開發約定
 
 ### HTML
-- 不得含 inline `<style>` 與 inline `<script>`（`tailwind-config.js`、`file-protocol-guard.js` 除外）
+- 不得含 inline `<style>` 與 inline `<script>`（`file-protocol-guard.js` 除外）
 - 不得使用 `onclick=` 等 inline 事件屬性
+- 使用語意標籤（`<header>` / `<nav>` / `<main>` / `<article>` / `<section>` / `<footer>`）
+- 顯示／隱藏統一使用 `hidden` **class**（JS 以 `classList.add/remove('hidden')` 切換）
 - 事件統一走 `data-action` + `document` 層級事件委派：
 
 ```html
-<button data-action="change-qty" data-item-id="101" data-delta="-1">
+<button type="button" data-action="change-qty" data-item-id="101" data-delta="-1">
 ```
 
 ### JS
@@ -109,10 +132,12 @@ dm/
 - 共用狀態一律透過 `js/core/store.js` 的 `loadState / saveState / updateState / subscribe`，
   **禁止在頁面檔自行操作 `localStorage`**
 - 種子資料一律放 `js/core/seed-data.js`，**禁止在頁面檔複製預設資料**
+- 動態產生元素時**只切換 `.is-*` 修飾子或增減 class**，
+  不要在 JS 內拼接整串樣式 class
 
 ### CSS
 - 全站共用樣式放 `css/base.css`，頁面專屬樣式放 `css/pages/<頁面>.css`
-- `<link>` 必須置於 Tailwind CDN script 之後，以維持既有層疊順序
+- `<link>` 載入順序：`base.css` → `pages/<page>.css`（後者優先）
 
 ---
 
@@ -120,15 +145,15 @@ dm/
 
 ```bash
 node tests/smoke.mjs          # 4 頁核心流程回歸測試（含跨分頁即時同步）
-node tests/class-audit.mjs    # class 屬性稽核（找出無效樣式）
 ```
 
 以 headless Chrome 執行 4 頁核心流程回歸測試（含跨分頁即時同步），
 零外部 npm 依賴（僅用 Node 內建 `fetch` 與 `WebSocket`）。
+目前為 14 個案例 / 70 項檢查，全數通過。
 
-`tests/class-audit.mjs` 會以瀏覽器**實際產生的樣式表**為準分類每個 class，
-並對「查無對應」的 class 在真實頁面上驗證是否為**靜默失效**。
-分析報告見 [CLASS-AUDIT.md](./CLASS-AUDIT.md)。
+> `CLASS-AUDIT.md` 與 `tests/class-audit.mjs` 為 v1.1.0（Tailwind 時代）的稽核產物，
+> 其分析對象是已移除的 Tailwind class，於 v2.0.0 之後僅具歷史參考價值，
+> 不再納入常規測試流程。
 
 ---
 
@@ -137,6 +162,6 @@ node tests/class-audit.mjs    # class 屬性稽核（找出無效樣式）
 | 檔案 | 說明 |
 |---|---|
 | `CHANGELOG.md` | 版本號的**單一事實來源** |
-| `README.md` / `PLAN.md` / `TASK.md` / `CLASS-AUDIT.md` | `project_version` 必須與 CHANGELOG 一致 |
+| `README.md` / `PLAN.md` / `TASK.md` | `project_version` 必須與 CHANGELOG 一致 |
 
-目前版本：**1.1.0**
+目前版本：**2.0.0**

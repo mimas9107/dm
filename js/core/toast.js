@@ -16,14 +16,14 @@ const ICONS = {
 };
 
 const ICON_COLORS = {
-  info: 'text-amber-400',
-  warning: 'text-amber-400',
-  success: 'text-emerald-400'
+  info: 'toast__icon--warning',
+  warning: 'toast__icon--warning',
+  success: 'toast__icon--success'
 };
 
 const POSITIONS = {
-  'top-center': 'fixed top-20 left-1/2 -translate-x-1/2 z-50',
-  'bottom-right': 'fixed bottom-6 right-6 z-50'
+  'top-center': 'toast--top-center',
+  'bottom-right': 'toast--bottom-right'
 };
 
 /**
@@ -40,7 +40,7 @@ export function showToast(message, options = {}) {
   } = options;
 
   const toast = document.createElement('div');
-  toast.className = `${POSITIONS[position] || POSITIONS['top-center']} bg-stone-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 transition-all duration-300`;
+  toast.className = `toast ${POSITIONS[position] || POSITIONS['top-center']}`;
   toast.setAttribute('role', 'status');
   toast.setAttribute('aria-live', 'polite');
 
@@ -49,7 +49,7 @@ export function showToast(message, options = {}) {
 
   const iconEl = document.createElement('i');
   iconEl.dataset.lucide = icon;
-  iconEl.className = `w-4 h-4 shrink-0 ${color}`;
+  iconEl.className = `icon icon--sm toast__icon ${color}`;
 
   const textEl = document.createElement('span');
   textEl.textContent = message;
@@ -61,11 +61,11 @@ export function showToast(message, options = {}) {
   refreshIcons();
 
   setTimeout(() => {
-    toast.classList.add('opacity-0');
+    toast.classList.add('is-leaving');
     if (position === 'bottom-right') {
-      toast.classList.add('translate-y-2');
+      toast.classList.add('is-leaving--down');
     } else {
-      toast.classList.add('-translate-y-2');
+      toast.classList.add('is-leaving--up');
     }
     setTimeout(() => toast.remove(), 300);
   }, duration);

@@ -2,382 +2,348 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>來電送 - 首頁與店家介紹</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Tailwind 主題設定：必須為傳統 script，詳見 js/core/tailwind-config.js 檔頭說明 -->
-  <script src="./js/core/tailwind-config.js"></script>
-  <!-- Lucide Icons -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="來電送 CALL & DELIVER — 午間專送外送平台，瀏覽店家、選購餐點、撥號下單。">
+  <title>來電送 — 首頁與店家介紹</title>
+
+  <!-- Lucide 圖示（runtime 將 <i data-lucide> 換成 SVG） -->
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <!-- Google Fonts: Noto Sans TC -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <!-- 樣式：全站共用 + 本頁專屬（link 需置於 Tailwind CDN 之後，以維持既有層疊順序） -->
+
+  <!-- 樣式：全站共用 + 本頁專屬 -->
   <link rel="stylesheet" href="./css/base.css">
   <link rel="stylesheet" href="./css/pages/index.css">
+
   <!-- file:// 開啟守衛：避免 ES Module 被 CORS 阻擋時無聲失敗 -->
   <script src="./js/core/file-protocol-guard.js"></script>
 </head>
-<body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
+<body>
 
-  <!-- ========================================================= -->
-  <!-- 頁面 1：首頁 (Screen 1 - Homepage RWD 手機/平板適應)       -->
-  <!-- ========================================================= -->
-  <div id="page-home" class="min-h-screen flex flex-col justify-between transition-opacity duration-300">
-    
-    <!-- 頂部 Logo 區與快速進入點按鈕 (嚴格使用：大 text-xl、小 text-xs) -->
-    <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 shadow-xs">
-      <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 min-h-16 md:min-h-20 py-2.5 md:py-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        
-        <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
-        <div class="flex items-center gap-2.5 cursor-pointer select-none shrink-0" data-action="go-home">
-          <img src="./assets/CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
-          <div class="shrink-0 whitespace-nowrap">
-            <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
-            <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">CALL & DELIVER</span>
+  <!-- ============================================================ -->
+  <!-- 畫面 1：首頁                                                  -->
+  <!-- ============================================================ -->
+  <div id="page-home" class="page page--home">
+
+    <header class="app-header">
+      <div class="app-header__inner">
+
+        <!-- 品牌識別（點擊回首頁） -->
+        <div class="app-header__brand" data-action="go-home">
+          <img src="./assets/CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="app-logo">
+          <div class="brand-lockup">
+            <span class="app-brand">來電送</span>
+            <span class="app-brand__sub">CALL &amp; DELIVER</span>
           </div>
         </div>
 
-        <!-- 首頁頂部入口按鈕區：1. 顧客「訂單追蹤」按鈕 + 2. 「店家接單」按鈕 -->
-        <div class="flex items-center gap-2 shrink-0">
-          <a id="nav-user-track" href="user_order_track.html" class="text-xs bg-brick-light hover:bg-red-100/80 text-brick px-3 py-2 rounded-xl font-bold border border-red-200/80 flex items-center gap-1.5 transition active:scale-95 shrink-0 whitespace-nowrap shadow-2xs">
-            <i data-lucide="radar" class="w-3.5 h-3.5 text-brick"></i>
+        <!-- 角色入口 -->
+        <nav class="app-header__nav" aria-label="角色切換">
+          <a id="nav-user-track" href="user_order_track.html" class="app-navlink app-navlink--brand app-navlink--shadow">
+            <i data-lucide="radar" class="icon icon--xs icon--brand"></i>
             <span>訂單追蹤</span>
           </a>
-          <a id="nav-store-order" href="order_accept.html" class="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-2 rounded-xl font-bold border border-stone-200/80 flex items-center gap-1.5 transition active:scale-95 shrink-0 whitespace-nowrap shadow-2xs">
-            <i data-lucide="clipboard-list" class="w-3.5 h-3.5 text-brick"></i>
+          <a id="nav-store-order" href="order_accept.html" class="app-navlink app-navlink--muted app-navlink--shadow">
+            <i data-lucide="clipboard-list" class="icon icon--xs icon--brand"></i>
             <span>店家接單</span>
           </a>
-        </div>
+        </nav>
       </div>
     </header>
 
-    <!-- 中央輪播主視覺區 (手機 max-w-xl / 平板與桌面 md:max-w-4xl lg:max-w-5xl) -->
-    <main class="flex-1 max-w-xl md:max-w-4xl lg:max-w-5xl w-full mx-auto px-4 md:px-6 py-5 md:py-8 flex flex-col justify-center">
-      
-      <!-- 頂部副標列 (小 text-xs) -->
-      <div class="flex items-center justify-between mb-2.5 md:mb-3.5 px-1">
-        <h2 class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-brick"></i> 今日熱門推薦 (點擊進入店家)
+    <main class="app-main">
+      <div class="home-intro">
+        <h2 class="section-heading">
+          <i data-lucide="sparkles" class="icon icon--xs icon--brand"></i> 今日熱門推薦 (點擊進入店家)
         </h2>
-        <span id="carousel-indicator" class="text-xs font-mono font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md">1 / 3</span>
+        <span id="carousel-indicator" class="badge badge--brand badge--mono">1 / 3</span>
       </div>
 
-      <!-- 輪播卡片本體 (手機版直式上圖下文 / 平板以上 md:grid-cols-12 左右雙欄寬版卡片) -->
-      <div class="relative bg-white rounded-3xl overflow-hidden shadow-xl shadow-stone-200/70 border border-stone-200/80 grid grid-cols-1 md:grid-cols-12">
-        
-        <!-- 左欄：圖片容器 (手機高比例置頂 h-64 sm:h-72 / 平板占 7/12 高度自適應填滿) -->
-        <div class="md:col-span-7 relative h-64 sm:h-72 md:h-96 lg:h-[420px] w-full overflow-hidden bg-stone-900 cursor-pointer" data-action="open-current-restaurant">
-          <img id="carousel-img" src="" alt="菜色照片" class="w-full h-full object-cover transition-all duration-700 hover:scale-105">
-          <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/25 pointer-events-none"></div>
-          
-          <!-- 標籤 (小 text-xs) -->
-          <span id="carousel-tag" class="absolute top-3.5 left-3.5 md:top-5 md:left-5 bg-brick text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-            人氣招牌
-          </span>
+      <!-- 輪播卡片 -->
+      <article class="carousel">
 
-          <!-- 左右快速切換按鈕 -->
-          <div class="absolute inset-x-3 md:inset-x-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-10">
-            <button data-action="prev-slide" class="pointer-events-auto p-2 md:p-2.5 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-xs transition active:scale-90 cursor-pointer" aria-label="上一張">
-              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        <!-- 左欄：主視覺 -->
+        <div class="carousel__media" data-action="open-current-restaurant">
+          <img id="carousel-img" src="" alt="菜色照片" class="carousel__img">
+          <div class="carousel__scrim" aria-hidden="true"></div>
+
+          <span id="carousel-tag" class="carousel__tag">人氣招牌</span>
+
+          <div class="carousel__arrows">
+            <button type="button" data-action="prev-slide" class="carousel__arrow" aria-label="上一張">
+              <i data-lucide="chevron-left" class="icon icon--md"></i>
             </button>
-            <button data-action="next-slide" class="pointer-events-auto p-2 md:p-2.5 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-xs transition active:scale-90 cursor-pointer" aria-label="下一張">
-              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            <button type="button" data-action="next-slide" class="carousel__arrow" aria-label="下一張">
+              <i data-lucide="chevron-right" class="icon icon--md"></i>
             </button>
           </div>
 
-          <!-- 圖片覆蓋菜名 (大 text-xl) -->
-          <div class="absolute bottom-3 left-4 right-4 md:bottom-5 md:left-6 md:right-6 text-white pointer-events-none">
-            <p id="carousel-dish" class="text-xl font-black drop-shadow-sm truncate"></p>
-          </div>
+          <p id="carousel-dish" class="carousel__dish"></p>
         </div>
 
-        <!-- 右欄：資訊與按鈕內容 (平板占 5/12，垂直分散對齊) -->
-        <div class="md:col-span-5 p-4 md:p-7 lg:p-8 flex flex-col justify-between gap-3 md:gap-6">
-          <div class="flex flex-col gap-2 md:gap-3.5">
-            <!-- 店名 (中 text-base) 與 起送價 (大 text-xl) -->
-            <div class="flex items-center md:items-start md:flex-col md:gap-2 justify-between cursor-pointer" data-action="open-current-restaurant">
-              <h3 id="carousel-title" class="text-base font-black text-stone-900 tracking-tight hover:text-brick transition"></h3>
-              <span id="carousel-price" class="text-xl font-black text-brick font-mono"></span>
+        <!-- 右欄：資訊與操作 -->
+        <div class="carousel__body">
+          <div class="carousel__head">
+            <div class="carousel__title-row" data-action="open-current-restaurant">
+              <h3 id="carousel-title" class="carousel__title"></h3>
+              <span id="carousel-price" class="carousel__price"></span>
             </div>
 
-            <!-- 精簡菜色介紹短句 (小 text-xs) -->
-            <p id="carousel-desc" class="text-xs text-stone-600 mt-1 md:mt-0 line-clamp-1 md:line-clamp-3 leading-relaxed"></p>
+            <p id="carousel-desc" class="carousel__desc u-clamp-1 u-clamp-3-md"></p>
 
-            <!-- 基本資訊指標 (小 text-xs) -->
-            <div class="flex flex-wrap items-center gap-2 mt-2.5 md:mt-2 text-xs text-stone-600">
-              <span class="flex items-center gap-1 font-bold text-amber-600">
-                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-500 text-amber-500"></i>
+            <ul class="meta-row meta-row--tight">
+              <li class="meta meta--rating">
+                <i data-lucide="star" class="icon icon--xs"></i>
                 <span id="carousel-rating">4.9</span>
-              </span>
-              <span>•</span>
-              <span id="carousel-time" class="flex items-center gap-1 font-medium">
-                <i data-lucide="clock" class="w-3.5 h-3.5"></i> 20-30 分
-              </span>
-              <span>•</span>
-              <span id="carousel-min" class="bg-stone-100 text-stone-700 px-2 py-0.5 rounded font-bold"></span>
-            </div>
+              </li>
+              <li class="meta__dot" aria-hidden="true">•</li>
+              <li id="carousel-time" class="meta">
+                <i data-lucide="clock" class="icon icon--xs"></i> 20-30 分
+              </li>
+              <li class="meta__dot" aria-hidden="true">•</li>
+              <li><span id="carousel-min" class="tag tag--neutral"></span></li>
+            </ul>
           </div>
 
-          <div class="flex flex-col gap-3 md:gap-5">
-            <!-- 動作按鈕：無縫跳轉店家頁 (中 text-base) -->
-            <div class="pt-1 md:pt-0">
-              <button data-action="open-current-restaurant" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-bold py-3 md:py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition cursor-pointer">
-                <i data-lucide="utensils" class="w-4 h-4"></i> 查看店家與菜單
-              </button>
-            </div>
+          <div class="carousel__actions">
+            <button type="button" data-action="open-current-restaurant" class="btn btn--primary btn--full">
+              <i data-lucide="utensils" class="icon icon--sm"></i> 查看店家與菜單
+            </button>
 
-            <!-- 底部圓點指示條 -->
-            <div class="flex gap-1.5 justify-center">
-              <button data-action="go-slide" data-index="0" class="h-1.5 rounded-full transition-all duration-300 indicator-bar w-8 bg-brick cursor-pointer"></button>
-              <button data-action="go-slide" data-index="1" class="h-1.5 rounded-full transition-all duration-300 indicator-bar w-3 bg-stone-200 cursor-pointer"></button>
-              <button data-action="go-slide" data-index="2" class="h-1.5 rounded-full transition-all duration-300 indicator-bar w-3 bg-stone-200 cursor-pointer"></button>
+            <div class="carousel__dots" role="tablist" aria-label="輪播頁面">
+              <button type="button" data-action="go-slide" data-index="0" class="indicator-bar" aria-label="第 1 張"></button>
+              <button type="button" data-action="go-slide" data-index="1" class="indicator-bar" aria-label="第 2 張"></button>
+              <button type="button" data-action="go-slide" data-index="2" class="indicator-bar" aria-label="第 3 張"></button>
             </div>
           </div>
         </div>
-      </div>
+      </article>
     </main>
 
-    <!-- 頁尾 (小 text-xs)：平台資訊檢視與角色切換小字連結 -->
-    <footer class="w-full text-center py-4 px-4 text-xs text-stone-600 space-y-1.5 border-t border-stone-200/50 bg-white/50">
-      <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-        <button data-action="open-cms" data-key="terms" class="hover:text-brick underline-offset-2 hover:underline cursor-pointer">服務條款</button>
-        <span class="text-stone-300">•</span>
-        <button data-action="open-cms" data-key="support" class="hover:text-brick underline-offset-2 hover:underline cursor-pointer">客服說明</button>
-        <span class="text-stone-300">•</span>
-        <button data-action="open-cms" data-key="intro" class="hover:text-brick underline-offset-2 hover:underline cursor-pointer">使用介紹</button>
-        <span class="text-stone-300">•</span>
-        <button data-action="open-cms" data-key="faq" class="hover:text-brick underline-offset-2 hover:underline cursor-pointer">常用問答</button>
-      </div>
-      <div class="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-stone-500">
+    <footer class="app-footer app-footer--bordered">
+      <nav class="link-row" aria-label="平台資訊">
+        <button type="button" data-action="open-cms" data-key="terms" class="link-inline">服務條款</button>
+        <span class="dot-sep" aria-hidden="true">•</span>
+        <button type="button" data-action="open-cms" data-key="support" class="link-inline">客服說明</button>
+        <span class="dot-sep" aria-hidden="true">•</span>
+        <button type="button" data-action="open-cms" data-key="intro" class="link-inline">使用介紹</button>
+        <span class="dot-sep" aria-hidden="true">•</span>
+        <button type="button" data-action="open-cms" data-key="faq" class="link-inline">常用問答</button>
+      </nav>
+      <nav class="link-row link-row--muted" aria-label="頁面導覽">
         <span>© 來電送 • 準時專送</span>
-        <span class="text-stone-300">|</span>
-        <a href="index.html" class="text-brick font-bold hover:underline">顧客首頁</a>
-        <span>·</span>
-        <a href="user_order_track.html" class="hover:text-brick hover:underline">訂單追蹤</a>
-        <span>·</span>
-        <a href="order_accept.html" class="hover:text-brick hover:underline">店家接單</a>
-        <span>·</span>
-        <a href="controller.html" class="hover:text-brick hover:underline">後台主控台</a>
-      </div>
+        <span class="dot-sep" aria-hidden="true">|</span>
+        <a href="index.html" class="link-inline link-inline--current">顧客首頁</a>
+        <span aria-hidden="true">·</span>
+        <a href="user_order_track.html" class="link-inline">訂單追蹤</a>
+        <span aria-hidden="true">·</span>
+        <a href="order_accept.html" class="link-inline">店家接單</a>
+        <span aria-hidden="true">·</span>
+        <a href="controller.html" class="link-inline">後台主控台</a>
+      </nav>
     </footer>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- 頁面 2：店家介紹頁面 (Screen 2 - 店家介紹與菜單 RWD 適應) -->
-  <!-- ========================================================= -->
-  <div id="page-detail" class="hidden min-h-screen flex flex-col justify-between bg-stone-50 pb-24 md:pb-28 transition-opacity duration-300">
-    
-    <!-- 頂部導航 (左側返回、標題、右上角外送車含 Badge) -->
-    <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200 sticky top-0 z-40">
-      <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
-        <button data-action="go-home" class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-700 transition active:scale-95 cursor-pointer">
-          <i data-lucide="arrow-left" class="w-5 h-5"></i>
+  <!-- ============================================================ -->
+  <!-- 畫面 2：店家介紹與菜單                                        -->
+  <!-- ============================================================ -->
+  <div id="page-detail" class="page page--detail hidden">
+
+    <header class="app-header app-header--flat">
+      <div class="detail-bar">
+        <button type="button" data-action="go-home" class="icon-btn icon-btn--neutral" aria-label="返回首頁">
+          <i data-lucide="arrow-left" class="icon icon--md"></i>
         </button>
-        <span class="text-base font-bold text-stone-800 tracking-wide">店家介紹與菜單</span>
-        <button data-action="focus-cart-bottom" class="relative w-10 h-10 md:w-11 md:h-11 rounded-xl bg-brick-light flex items-center justify-center text-brick transition active:scale-95 cursor-pointer">
-          <i data-lucide="truck" class="w-5 h-5"></i>
-          <span id="detail-cart-badge" class="hidden absolute -top-1 -right-1 bg-brick text-white text-xs w-5 h-5 font-bold rounded-full flex items-center justify-center shadow-xs">0</span>
+        <span class="detail-bar__title">店家介紹與菜單</span>
+        <button type="button" data-action="focus-cart-bottom" class="icon-btn icon-btn--brand" aria-label="前往購物車">
+          <i data-lucide="truck" class="icon icon--md"></i>
+          <span id="detail-cart-badge" class="badge badge--brand badge--count hidden">0</span>
         </button>
       </div>
     </header>
 
-    <!-- 店家主體內容容器 (手機單欄 / 平板與桌面 md:grid-cols-12 左右雙欄看板) -->
-    <main class="max-w-xl md:max-w-4xl lg:max-w-5xl w-full mx-auto px-4 md:px-6 py-4 md:py-7 flex-1">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-start">
-        
-        <!-- 左欄 (平板占 5/12)：店家形象圖與基本資訊卡 -->
-        <div class="md:col-span-5 relative bg-white rounded-3xl overflow-hidden shadow-md border border-stone-100">
-          
-          <!-- Hero 店家形象大圖 -->
-          <div class="relative h-48 sm:h-56 md:h-52 lg:h-60 w-full">
-            <img id="detail-hero-img" src="" alt="店家大圖" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            
-            <div class="absolute bottom-3 left-4 right-4 text-white">
-              <span id="detail-tag" class="text-xs font-bold bg-brick px-2.5 py-0.5 rounded-full inline-block mb-1">精選餐廳</span>
-              <h1 id="detail-name" class="text-xl font-black tracking-tight drop-shadow-sm"></h1>
+    <main class="app-main app-main--top">
+      <div class="detail-grid">
+
+        <!-- 左欄：店家形象與資訊 -->
+        <section class="store-card">
+          <div class="store-card__hero">
+            <img id="detail-hero-img" src="" alt="店家大圖" class="store-card__img">
+            <div class="store-card__scrim" aria-hidden="true"></div>
+            <div class="store-card__hero-text">
+              <span id="detail-tag" class="tag tag--brand">精選餐廳</span>
+              <h1 id="detail-name" class="store-card__name"></h1>
             </div>
           </div>
 
-          <!-- 店家基本資訊與地址 (嚴格使用：小 text-xs) -->
-          <div class="p-4 md:p-5 border-b border-stone-100">
-            
-            <!-- 門市地址欄位 -->
-            <div class="flex items-start gap-2 text-xs text-stone-700 mb-3 bg-stone-50 p-2.5 md:p-3 rounded-xl border border-stone-200/60">
-              <i data-lucide="map-pin" class="w-4 h-4 text-brick shrink-0 mt-0.5"></i>
-              <div class="flex-1 min-w-0">
-                <span class="text-stone-500 font-semibold block text-xs">店家門市地址</span>
-                <span id="detail-address" class="font-bold text-stone-900 block mt-0.5"></span>
+          <div class="store-card__info">
+            <!-- 門市地址 -->
+            <div class="info-box">
+              <i data-lucide="map-pin" class="icon icon--sm icon--brand info-box__icon"></i>
+              <div class="u-grow">
+                <span class="info-box__label">店家門市地址</span>
+                <span id="detail-address" class="info-box__value"></span>
               </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-stone-600 mb-3.5">
-              <span class="flex items-center gap-1 text-amber-600 font-bold">
-                <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-500 text-amber-500"></i>
+            <ul class="meta-row">
+              <li class="meta meta--rating">
+                <i data-lucide="star" class="icon icon--xs"></i>
                 <span id="detail-rating">4.9</span>
-              </span>
-              <span class="flex items-center gap-1">
-                <i data-lucide="clock" class="w-3.5 h-3.5 text-stone-600"></i>
+              </li>
+              <li class="meta">
+                <i data-lucide="clock" class="icon icon--xs"></i>
                 <span id="detail-hours">10:30 - 13:30</span>
-              </span>
-              <span class="flex items-center gap-1">
-                <i data-lucide="phone" class="w-3.5 h-3.5 text-stone-600"></i>
+              </li>
+              <li class="meta">
+                <i data-lucide="phone" class="icon icon--xs"></i>
                 <span id="detail-phone">02-2398-1122</span>
-              </span>
-            </div>
+              </li>
+            </ul>
 
-            <!-- 最低外送要求標籤 (小 text-xs) -->
-            <div class="bg-brick-light/80 border border-red-200/60 rounded-xl p-3 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-brick text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <i data-lucide="package-check" class="w-4 h-4"></i>
+            <!-- 最低外送要求 -->
+            <div class="min-order">
+              <div class="min-order__left">
+                <div class="min-order__icon">
+                  <i data-lucide="package-check" class="icon icon--sm"></i>
                 </div>
                 <div>
-                  <span class="text-xs font-bold text-stone-800 block">最低外送數量</span>
-                  <span id="detail-min-text" class="text-xs text-brick font-bold">滿 3 份送</span>
+                  <span class="min-order__label">最低外送數量</span>
+                  <span id="detail-min-text" class="min-order__value">滿 3 份送</span>
                 </div>
               </div>
-              <span id="detail-store-status-tag" class="text-xs bg-white text-stone-600 px-2.5 py-1 rounded-md border border-stone-200 font-bold">免外送費</span>
+              <span id="detail-store-status-tag" class="tag tag--outline">免外送費</span>
             </div>
           </div>
 
-          <!-- 外送範圍限制遮罩 (手繪稿中的【外送範圍限制 - 客人無法下單 mask】) -->
-          <div id="range-mask" class="hidden absolute inset-0 z-20 out-of-range-mask flex flex-col items-center justify-center p-6 text-center">
-            <div class="bg-white/95 p-5 rounded-2xl shadow-2xl border-2 border-brick max-w-sm w-full mx-auto">
-              <div class="w-10 h-10 rounded-full bg-red-100 text-brick flex items-center justify-center mx-auto mb-2.5">
-                <i data-lucide="map-pin-off" class="w-5 h-5"></i>
+          <!-- 外送範圍限制遮罩 -->
+          <div id="range-mask" class="range-mask out-of-range-mask hidden">
+            <div class="range-mask__panel">
+              <div class="range-mask__icon">
+                <i data-lucide="map-pin-off" class="icon icon--md"></i>
               </div>
-              <h3 class="text-xl font-black text-stone-900 mb-1">超出外送範圍</h3>
-              <p class="text-xs text-stone-600 mb-3 leading-relaxed">
+              <h3 class="range-mask__title">超出外送範圍</h3>
+              <p class="range-mask__desc">
                 您的位置超出本店午餐外送半徑，目前無法提供送餐服務。
               </p>
-              <button data-action="toggle-range" class="w-full bg-stone-800 text-white text-xs font-bold py-2.5 rounded-xl hover:bg-black transition active:scale-95">
+              <button type="button" data-action="toggle-range" class="btn btn--dark btn--full btn--sm">
                 切換回範圍內測試
               </button>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- 右欄 (平板占 7/12)：今日供應菜單列表 (小 text-xs、中 text-base、大 text-xl) -->
-        <div class="md:col-span-7 mb-4 md:mb-0">
-          <div class="flex items-center justify-between mb-2.5 md:mb-3 px-1">
-            <h2 class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
-              <i data-lucide="book-open" class="w-3.5 h-3.5 text-brick"></i> 今日供應菜單
+        <!-- 右欄：菜單 -->
+        <section class="menu-column">
+          <div class="home-intro">
+            <h2 class="section-heading">
+              <i data-lucide="book-open" class="icon icon--xs icon--brand"></i> 今日供應菜單
             </h2>
-            <span id="customer-identity-hint" class="text-xs font-bold text-stone-500">訂餐人：王小明</span>
+            <span id="customer-identity-hint" class="section-note">訂餐人：王小明</span>
           </div>
-          <div id="detail-menu-list" class="space-y-2.5 md:space-y-3">
-            <!-- 菜單卡片動態渲染於此 -->
+          <div id="detail-menu-list" class="menu-list">
+            <!-- 菜單卡片由 JS 動態渲染 -->
           </div>
-        </div>
-
+        </section>
       </div>
     </main>
 
-    <!-- 店家介紹頁尾小字連結 -->
-    <footer class="w-full text-center py-3 px-4 text-xs text-stone-500">
-      <div class="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+    <footer class="app-footer app-footer--plain">
+      <nav class="link-row link-row--muted" aria-label="頁面導覽">
         <span>© 來電送</span>
-        <span>|</span>
-        <a href="index.html" class="text-brick font-bold hover:underline">顧客首頁</a>
-        <span>·</span>
-        <a href="user_order_track.html" class="hover:text-brick hover:underline">訂單追蹤</a>
-        <span>·</span>
-        <a href="order_accept.html" class="hover:text-brick hover:underline">店家接單</a>
-        <span>·</span>
-        <a href="controller.html" class="hover:text-brick hover:underline">後台主控台</a>
-      </div>
+        <span aria-hidden="true">|</span>
+        <a href="index.html" class="link-inline link-inline--current">顧客首頁</a>
+        <span aria-hidden="true">·</span>
+        <a href="user_order_track.html" class="link-inline">訂單追蹤</a>
+        <span aria-hidden="true">·</span>
+        <a href="order_accept.html" class="link-inline">店家接單</a>
+        <span aria-hidden="true">·</span>
+        <a href="controller.html" class="link-inline">後台主控台</a>
+      </nav>
     </footer>
 
-    <!-- 底部固定 Buy 欄 (對應草圖底部 🛺 buy 按鈕，支援手機與平板寬度對齊) -->
-    <div class="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 md:py-3.5 md:px-6 z-30 shadow-lg">
-      <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto flex items-center justify-between gap-3 md:gap-6">
-        <div class="flex items-center gap-2.5 md:gap-3">
-          <div class="w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-brick-light flex items-center justify-center text-brick">
-            <i data-lucide="truck" class="w-5 h-5"></i>
+    <!-- 底部固定結帳列 -->
+    <div class="checkout-bar">
+      <div class="checkout-bar__inner">
+        <div class="checkout-bar__summary">
+          <div class="checkout-bar__icon">
+            <i data-lucide="truck" class="icon icon--md"></i>
           </div>
           <div>
-            <div class="text-xs text-stone-600">已選 <span id="cart-count" class="font-bold text-brick">0</span> 份</div>
-            <div class="text-xl font-black text-stone-900 font-mono">NT$ <span id="cart-price">0</span></div>
+            <div class="checkout-bar__count">已選 <span id="cart-count" class="checkout-bar__count-value">0</span> 份</div>
+            <div class="checkout-bar__price u-mono">NT$ <span id="cart-price">0</span></div>
           </div>
         </div>
 
-        <button id="btn-buy" data-action="handle-buy" class="flex-1 md:max-w-sm bg-brick hover:bg-brick-dark text-white font-bold py-3.5 px-4 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 active:scale-[0.98] transition cursor-pointer">
-          <i data-lucide="phone-outgoing" class="w-4 h-4"></i>
+        <button type="button" id="btn-buy" data-action="handle-buy" class="btn btn--primary btn--grow">
+          <i data-lucide="phone-outgoing" class="icon icon--sm"></i>
           <span id="btn-buy-text">立即來電訂餐</span>
         </button>
       </div>
-      <!-- 起送數量提示條 -->
-      <div id="cart-warning" class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto text-center text-xs text-amber-700 font-bold pt-1 hidden">
+      <p id="cart-warning" class="checkout-bar__warning hidden">
         ⚠️ 尚未達起送門檻（還差 <span id="need-more-count">0</span> 份）
-      </div>
+      </p>
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- 來電下單確認彈窗 (可選擇模擬顧客身分驗證黑名單機制)       -->
-  <!-- ========================================================= -->
-  <div id="modal-call" class="fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-sm md:max-w-md w-full p-5 md:p-6 text-center shadow-2xl relative">
-      <div class="w-12 h-12 bg-brick-light text-brick rounded-2xl flex items-center justify-center mx-auto mb-3">
-        <i data-lucide="phone-call" class="w-6 h-6"></i>
+  <!-- ============================================================ -->
+  <!-- 來電下單確認彈窗                                              -->
+  <!-- ============================================================ -->
+  <div id="modal-call" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-call-title">
+    <div class="modal__panel modal__panel--sm">
+      <div class="modal__icon modal__icon--brand">
+        <i data-lucide="phone-call" class="icon icon--lg"></i>
       </div>
-      <h3 class="text-xl font-black text-stone-900">確認撥打訂餐？</h3>
+      <h3 id="modal-call-title" class="modal__title">確認撥打訂餐？</h3>
 
-      <!-- 訂餐顧客身分選擇（連動後台顧客黑名單權限，加上 min-w-0 w-full overflow-hidden 防止表單元素撐破灰框） -->
-      <div class="mt-3 text-left bg-stone-50 p-3 rounded-xl border border-stone-200/80 space-y-2.5 overflow-hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
-          <label for="order-customer-select" class="text-xs font-bold text-stone-600 shrink-0">訂餐顧客：</label>
-          <select id="order-customer-select" class="w-full sm:flex-1 min-w-0 max-w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-stone-900 focus:outline-none focus:border-brick truncate">
-          </select>
+      <div class="form-block">
+        <div class="form-row">
+          <label for="order-customer-select" class="form-row__label">訂餐顧客：</label>
+          <select id="order-customer-select" class="field"></select>
         </div>
-        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
-          <label for="order-address-input" class="text-xs font-bold text-stone-600 shrink-0">外送地址：</label>
-          <input id="order-address-input" type="text" value="台北市信義區松高路 11 號 5 樓" class="w-full sm:flex-1 min-w-0 max-w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-stone-900 focus:outline-none focus:border-brick">
+        <div class="form-row">
+          <label for="order-address-input" class="form-row__label">外送地址：</label>
+          <input id="order-address-input" type="text" value="台北市信義區松高路 11 號 5 樓" class="field">
         </div>
       </div>
 
-      <p id="modal-desc" class="text-xs text-stone-600 my-2.5 leading-relaxed bg-stone-50 p-3 md:p-3.5 rounded-xl border border-stone-100 text-left"></p>
-      
-      <p id="modal-blacklist-alert" class="text-xs text-amber-600 font-bold mb-4 bg-amber-50 py-1.5 px-2.5 rounded-lg border border-amber-100">
+      <p id="modal-desc" class="modal__note"></p>
+
+      <p id="modal-blacklist-alert" class="alert alert--warning">
         📌 提醒：送出即不可改單/棄單。
       </p>
 
-      <div class="flex gap-2.5">
-        <button data-action="close-call-modal" class="flex-1 py-2.5 md:py-3 text-stone-600 bg-stone-100 hover:bg-stone-200 font-bold rounded-xl text-base transition active:scale-95 cursor-pointer">
+      <div class="modal__actions">
+        <button type="button" data-action="close-call-modal" class="btn btn--ghost-neutral">
           取消
         </button>
-        <button id="modal-call-btn" data-action="submit-order" class="flex-1 py-2.5 md:py-3 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
-          <i data-lucide="phone" class="w-4 h-4"></i> 撥號下單
+        <button type="button" id="modal-call-btn" data-action="submit-order" class="btn btn--primary btn--raised">
+          <i data-lucide="phone" class="icon icon--sm"></i> 撥號下單
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- 平台條款 / 客服說明 / 使用介紹 / 常用問答 檢視彈窗         -->
-  <!-- ========================================================= -->
-  <div id="modal-cms-info" class="fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-md w-full p-5 md:p-6 shadow-2xl relative">
-      <div class="flex items-center justify-between border-b border-stone-200 pb-3 mb-3">
-        <h3 id="modal-cms-title" class="text-base font-black text-stone-900">服務條款</h3>
-        <span id="modal-cms-updated" class="text-xs text-stone-400"></span>
+  <!-- ============================================================ -->
+  <!-- 平台條款 / 客服說明 / 使用介紹 / 常用問答 檢視彈窗            -->
+  <!-- ============================================================ -->
+  <div id="modal-cms-info" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-cms-title">
+    <div class="modal__panel modal__panel--md">
+      <div class="modal__head">
+        <h3 id="modal-cms-title" class="modal__title modal__title--flush">服務條款</h3>
+        <span id="modal-cms-updated" class="modal__timestamp"></span>
       </div>
-      <!-- 分類快速切換 -->
-      <div id="modal-cms-tabs" class="flex flex-wrap gap-1.5 mb-3"></div>
-      <div id="modal-cms-body" class="text-xs text-stone-700 leading-relaxed whitespace-pre-line bg-stone-50 p-3.5 rounded-2xl border border-stone-200/70 max-h-64 overflow-y-auto"></div>
-      <button data-action="close-cms-modal" class="mt-4 w-full py-2.5 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base transition active:scale-95 cursor-pointer">
+      <div id="modal-cms-tabs" class="cms-tabs"></div>
+      <div id="modal-cms-body" class="cms-body"></div>
+      <button type="button" data-action="close-cms-modal" class="btn btn--primary btn--full btn--block">
         關閉
       </button>
     </div>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- JavaScript: 全站共用狀態同步、雙頁切換、輪播與購物車管理  -->
-  <!-- ========================================================= -->
   <script type="module" src="./js/pages/index.js"></script>
 </body>
 </html>

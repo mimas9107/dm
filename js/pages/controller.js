@@ -50,17 +50,10 @@ function switchMainTab(tabKey) {
 
     if (btn) {
       btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      btn.className = isActive
-        ? 'flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer bg-brick text-white shadow-sm'
-        : 'flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-stone-700 hover:text-stone-900 hover:bg-white/60';
     }
 
     if (panel) {
-      if (isActive) {
-        panel.classList.remove('hidden');
-      } else {
-        panel.classList.add('hidden');
-      }
+      panel.classList.toggle('hidden', !isActive);
     }
   });
 
@@ -100,32 +93,28 @@ function renderStoresTable() {
   if (!tbody) return;
 
   tbody.innerHTML = storesAdminData.map((store, idx) => {
-    const soundBtnClass = store.soundEnabled
-      ? 'bg-brick-light text-brick border-red-200/80'
-      : 'bg-stone-100 text-stone-500 border-stone-200';
+    const soundBtnClass = store.soundEnabled ? 'mini-btn--sound-on' : 'mini-btn--sound-off';
     const soundLabel = store.soundEnabled ? '🔔 叮咚開啟' : '🔕 靜音';
 
-    const authBtnClass = store.active
-      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
-      : 'bg-stone-200 text-stone-600 border-stone-300 hover:bg-stone-300';
+    const authBtnClass = store.active ? 'mini-btn--ok' : 'mini-btn--suspended';
     const authLabel = store.active ? '正常接單' : '已停權';
 
     return `
-      <tr class="${store.active ? '' : 'opacity-60 bg-stone-50'}">
-        <td class="py-3 pr-2 align-top">
-          <div class="font-black text-stone-900">${escapeHtml(store.name)}</div>
-          <button data-action="toggle-store-sound" data-index="${idx}" class="mt-1 px-2 py-0.5 rounded-md border text-xs font-bold transition active:scale-95 cursor-pointer ${soundBtnClass}">
+      <tr class="${store.active ? '' : 'is-inactive'}">
+        <td class="col-name">
+          <div class="cell-name">${escapeHtml(store.name)}</div>
+          <button type="button" data-action="toggle-store-sound" data-index="${idx}" class="mini-btn mini-btn--stacked ${soundBtnClass}">
             ${soundLabel}
           </button>
         </td>
-        <td class="py-3 px-2 align-top font-mono font-bold text-stone-700 whitespace-nowrap">
+        <td class="col-mid cell-mono">
           ${escapeHtml(store.hours)}
         </td>
-        <td class="py-3 px-2 align-top font-mono font-bold text-stone-700 whitespace-nowrap">
+        <td class="col-mid cell-mono">
           ${escapeHtml(store.minOrder)}
         </td>
-        <td class="py-3 pl-2 align-top text-right whitespace-nowrap">
-          <button data-action="toggle-store-active" data-index="${idx}" class="px-2.5 py-1 rounded-lg border text-xs font-bold transition active:scale-95 cursor-pointer ${authBtnClass}">
+        <td class="col-right">
+          <button type="button" data-action="toggle-store-active" data-index="${idx}" class="mini-btn ${authBtnClass}">
             ${authLabel}
           </button>
         </td>
@@ -180,38 +169,36 @@ function renderCustomersTable() {
 
   tbody.innerHTML = customersAdminData.map((cust, idx) => {
     const abandonBadge = cust.abandonedCount > 0
-      ? `<span class="text-red-600 font-bold">棄單 ${cust.abandonedCount} 次</span>`
-      : '<span class="text-stone-400">無棄單</span>';
+      ? `<span class="abandon-count">棄單 ${cust.abandonedCount} 次</span>`
+      : '<span class="abandon-none">無棄單</span>';
 
-    const statusBtnClass = cust.blacklisted
-      ? 'bg-red-600 hover:bg-red-700 text-white border-red-700 shadow-xs'
-      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200';
+    const statusBtnClass = cust.blacklisted ? 'mini-btn--banned' : 'mini-btn--ok';
     const statusLabel = cust.blacklisted ? '🚫 黑名單 (解除)' : '✓ 正常 (設黑名單)';
 
     const orderLinks = cust.orders.map(ordId =>
-      `<button data-action="jump-to-order" data-order-id="${escapeHtml(ordId)}" class="underline-offset-2 hover:underline cursor-pointer">${escapeHtml(ordId)}</button>`
+      `<button type="button" data-action="jump-to-order" data-order-id="${escapeHtml(ordId)}" class="order-link">${escapeHtml(ordId)}</button>`
     ).join(', ');
 
     return `
-      <tr class="${cust.blacklisted ? 'bg-red-50/50' : ''}">
-        <td class="py-3 pr-2 align-top">
-          <div class="font-black ${cust.blacklisted ? 'text-red-700 line-through' : 'text-stone-900'}">${escapeHtml(cust.name)}</div>
-          <span class="text-xs font-bold ${cust.blacklisted ? 'text-red-600' : 'text-emerald-700'}">
+      <tr class="${cust.blacklisted ? 'is-blacklisted' : ''}">
+        <td class="col-name">
+          <div class="cell-name ${cust.blacklisted ? 'cell-name--struck' : ''}">${escapeHtml(cust.name)}</div>
+          <span class="u-text-xs u-strong ${cust.blacklisted ? 'u-text-danger' : 'u-text-success'}">
             ${cust.blacklisted ? '已禁止訂餐' : '權限正常'}
           </span>
         </td>
-        <td class="py-3 px-2 align-top font-mono font-bold text-stone-700 whitespace-nowrap">
+        <td class="col-mid cell-mono">
           ${escapeHtml(cust.tel)}
         </td>
-        <td class="py-3 px-2 align-top">
-          <div class="font-mono font-bold text-brick">${orderLinks}</div>
-          <div class="mt-0.5 flex items-center gap-1.5">
+        <td class="col-mid">
+          <div class="u-mono u-strong u-text-brand">${orderLinks}</div>
+          <div class="abandon-row">
             ${abandonBadge}
-            <button data-action="record-abandon" data-index="${idx}" class="px-1.5 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold cursor-pointer" title="記錄一次棄單">+棄單</button>
+            <button type="button" data-action="record-abandon" data-index="${idx}" class="mini-btn mini-btn--tiny" title="記錄一次棄單">+棄單</button>
           </div>
         </td>
-        <td class="py-3 pl-2 align-top text-right whitespace-nowrap">
-          <button data-action="toggle-blacklist" data-index="${idx}" class="px-2.5 py-1 rounded-lg border text-xs font-bold transition active:scale-95 cursor-pointer ${statusBtnClass}">
+        <td class="col-right">
+          <button type="button" data-action="toggle-blacklist" data-index="${idx}" class="mini-btn ${statusBtnClass}">
             ${statusLabel}
           </button>
         </td>
@@ -286,11 +273,9 @@ function renderCmsNav() {
 
   nav.innerHTML = cmsDocsData.map((doc, idx) => {
     const isActive = idx === currentCmsIdx;
-    const btnClass = isActive
-      ? 'px-3 py-2.5 rounded-xl text-xs font-black bg-brick text-white shadow-xs transition cursor-pointer text-left whitespace-nowrap'
-      : 'px-3 py-2.5 rounded-xl text-xs font-bold text-stone-700 hover:bg-stone-200/70 transition cursor-pointer text-left whitespace-nowrap';
+    const btnClass = isActive ? 'cms-nav__btn is-active' : 'cms-nav__btn';
     return `
-      <button data-action="switch-cms-doc" data-index="${idx}" class="${btnClass}">
+      <button type="button" data-action="switch-cms-doc" data-index="${idx}" class="${btnClass}" aria-selected="${isActive}">
         ${escapeHtml(doc.shortLabel)}
       </button>
     `;
@@ -329,19 +314,19 @@ function renderCmsContent() {
     viewBox.classList.add('hidden');
     editBox.classList.remove('hidden');
     btnCancel.classList.remove('hidden');
-    btnEdit.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i><span>儲存</span>';
-    btnEdit.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer';
+    btnEdit.innerHTML = '<i data-lucide="check" class="icon icon--xs"></i><span>儲存</span>';
+    btnEdit.className = 'cms-btn cms-btn--save';
     modeHint.innerText = '編輯模式中';
-    modeHint.className = 'font-bold text-brick';
+    modeHint.className = 'cms-mode-hint is-editing';
     editBox.focus();
   } else {
     viewBox.classList.remove('hidden');
     editBox.classList.add('hidden');
     btnCancel.classList.add('hidden');
-    btnEdit.innerHTML = '<i data-lucide="pen-line" class="w-3.5 h-3.5"></i><span>Edit</span>';
-    btnEdit.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brick text-white hover:bg-brick-dark shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer';
+    btnEdit.innerHTML = '<i data-lucide="pen-line" class="icon icon--xs"></i><span>Edit</span>';
+    btnEdit.className = 'cms-btn cms-btn--edit';
     modeHint.innerText = '檢視模式';
-    modeHint.className = 'font-bold text-stone-500';
+    modeHint.className = 'cms-mode-hint';
   }
 
   refreshIcons();

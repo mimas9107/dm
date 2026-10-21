@@ -289,17 +289,13 @@ async function main() {
     /* ---------------------------------------------------------------- S1 */
     await testCase('S1 首頁載入、輪播標題與指示條正確', async () => {
       const idx = await newTab('index.html');
-      assert('頁面標題正確', (await idx.eval('return document.title;')) === '來電送 - 首頁與店家介紹');
+      assert('頁面標題正確', (await idx.eval('return document.title;')) === '來電送 — 首頁與店家介紹');
       assertEqual('輪播標題', await idx.text('#carousel-title'), '禾風堂手作便當');
       assertEqual('輪播指示條', await idx.text('#carousel-indicator'), '1 / 3');
       assertEqual('主體背景色套用 base.css', await idx.eval("return getComputedStyle(document.body).backgroundColor;"), 'rgb(248, 246, 244)');
-      assertEqual('Tailwind brick 主題色生效', await idx.eval(`
-        const e = document.createElement('span');
-        e.className = 'text-brick';
-        document.body.appendChild(e);
-        const c = getComputedStyle(e).color;
-        e.remove();
-        return c;
+      assertEqual('品牌色權杖生效（.app-brand）', await idx.eval(`
+        const e = document.querySelector('.app-brand');
+        return e ? getComputedStyle(e).color : '';
       `), 'rgb(200, 75, 49)');
       assert('Logo 圖片載入成功', await idx.eval(`
         const i = document.querySelector('img[alt="來電送 Logo"]');

@@ -3,8 +3,8 @@ name: "PLAN.md"
 description: "來電送 CALL & DELIVER — 前端 B 組 Monolithic Script 重構計畫"
 created_date: "2026/10/21"
 modified_date: "2026/10/22"
-project_version: "1.1.0"
-document_version: "1.0.2"
+project_version: "2.0.0"
+document_version: "2.0.0"
 agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 ---
 
@@ -12,7 +12,8 @@ agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 
 > 本文件是**重構的設計依據**（做什麼、為什麼、怎麼驗）。
 > 實際執行步驟與進度請見 [TASK.md](./TASK.md)。
-> class 使用情況分析請見 [CLASS-AUDIT.md](./CLASS-AUDIT.md)。
+> Tailwind 時代的 class 使用情況分析請見 [CLASS-AUDIT.md](./CLASS-AUDIT.md)
+> （v2.0.0 已移除 Tailwind，該文件僅為歷史紀錄）。
 
 ---
 
@@ -298,28 +299,26 @@ export function formatMoney(n);        // 1234 → 'NT$ 1,234'
 
 ## 6. 實作注意事項
 
-### 6.1 `tailwind-config.js` 必須是 classic script
+### 6.1 `file-protocol-guard.js` 必須是 classic script
 
-Tailwind Play CDN 依賴 `window.tailwind.config` 的 **setter** 觸發重新產生 CSS。
-若改成 `<script type="module">`，模組會被 defer 到 DOM 解析完後才執行，
-設定晚於 Tailwind 首次產檔 → `brick` 主題色可能短暫失效（FOUC）或不被套用。
+需在頁面繪製前就攔截並顯示提示，故不能 defer → 使用傳統 script。
 
-→ `js/core/tailwind-config.js` 以**傳統 script**引入，且必須緊接在 Tailwind CDN 之後：
+> ~~6.1 `tailwind-config.js` 必須是 classic script~~
+> **已於 v2.0.0 移除 Tailwind**，本節所述之限制不再適用。原 `js/core/tailwind-config.js`
+> 已刪除，主題色改由 `css/base.css` 的 CSS 自訂屬性（`--color-brick` 等）定義。
+> 保留此註記僅為說明歷史脈絡。
+
+### 6.2 CSS 載入順序
+
+四個頁面的 `<link>` 順序固定為：
 
 ```html
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="./js/core/tailwind-config.js"></script>
+<link rel="stylesheet" href="./css/base.css">
+<link rel="stylesheet" href="./css/pages/<page>.css">
 ```
 
-### 6.2 `file-protocol-guard.js` 必須是 classic script
-
-需在頁面繪製前就攔截並顯示提示，故不能 defer → 同樣使用傳統 script。
-
-### 6.3 CSS 載入順序
-
-`<link href="css/base.css">` 必須置於 Tailwind CDN script **之後**，
-以維持與現況（inline `<style>` 在 CDN 之後）相同的層疊結果：
-Tailwind Play CDN 注入的 `<style>` 位於 `<head>` 尾端，優先於 `base.css` 的同名規則。
+`base.css` 提供設計權杖與共用元件，頁面 CSS 疊在其上。
+**v2.0.0 起已無 Tailwind CDN 注入的樣式表**，因此不再有「link 必須置於 CDN 之後」的限制。
 
 ### 6.4 資源路徑
 
@@ -395,9 +394,75 @@ Logo 由根目錄移至 `assets/`，4 個 HTML 的 `src` 需一併更新為 `./a
 
 ---
 
-## 10. 變更紀錄
+## 10. 第二階段：移除 Tailwind CSS（v2.0.0）
+
+### 10.1 問題陳述（P5）
+
+第一階段完成後，HTML/JS 的結構雖已分離，但**樣式仍完全依賴 Tailwind Play CDN**：
+
+| 面向 | 問題 |
+|---|---|
+| 執行期成本 | 瀏覽器需下載並執行 `cdn.tailwindcss.com`，於 runtime 掃描 DOM 產生樣式表 |
+| 靜默失效 | Play CDN 為 **v3.4.17**，但程式碼使用了 **v4 才有的**類名（`shadow-xs`、`shadow-2xs`、`backdrop-blur-xs`）與不存在的間距值（`md:py-4.5`、`sm:left-13`、`sm:right-13`）—— 共 12 項**不產生任何 CSS 且無錯誤訊息** |
+| 可維護性 | class 名稱與語意脫鉤（`flex items-center gap-3 text-xs font-bold text-stone-500`），難以整體調整 |
+| 相依性 | 離線不可用，且 CDN 版本升級可能改變既有視覺 |
+| 無障礙 | `user_order_track.html` 的進度按鈕帶 `focus:outline-none`，把鍵盤 focus 圈轉為透明 |
+
+### 10.2 技術決策
+
+- **目標**：全站樣式改為手寫 CSS，維持零建置工具、零 npm 依賴
+- **CSS 層數**：維持 2 層 —— `css/base.css` + `css/pages/<page>.css`
+- **`base.css` 結構**（6 段，順序固定）：
+  1. 設計權杖（CSS 自訂屬性）　2. 重置（取代 Tailwind Preflight）
+  3. 基礎元素　4. 版面外殼　5. 共用元件　6. `.u-*` 工具類
+- **命名約定**：語意區塊名 + `--` / `__` 修飾子 + `.is-*` 狀態 + `.u-*` 工具類
+- **靜默失效的處置**：原 v4-only 類名改為**實際生效**的權杖值
+  —— 陰影與毛玻璃效果首次真正渲染，屬預期且正確的視覺差異
+- **focus 圈**：統一由 `base.css` 的 `:focus-visible` 提供，修復 3 處被遮蔽的按鈕
+- **保留**：Google Fonts CDN、Lucide Icons CDN、原生 ES Modules、`data-action` 委派、所有元素 `id`
+
+### 10.3 驗收標準（第二階段）
+
+| # | 驗收項 | 判定方式 |
+|---|---|---|
+| B1 | 4 個 HTML 不含 `cdn.tailwindcss.com` 引用 | grep 檢查 |
+| B2 | `js/core/tailwind-config.js` 已刪除，且無任何檔案引用 | grep 檢查 |
+| B3 | HTML/JS 中不存在 Tailwind 工具類（`flex` / `text-xs` / `bg-stone-*` …） | 靜態掃描 |
+| B4 | HTML/JS 使用的每個 class 都有 CSS 定義（無孤兒 class） | 靜態掃描 |
+| B5 | 全站**無 hard-coded 色碼**於元件規則（改引用權杖） | 人工檢視 |
+| B6 | `tests/smoke.mjs` 14 個案例全數通過 | 自動化測試 |
+| B7 | 所有 JS 檔通過 `node --check` | 命令列檢查 |
+| B8 | 版面幾何正確（元素有尺寸、斷點行為正確） | 瀏覽器 CDP 量測 |
+| B9 | 彈窗／遮罩／摘要／編輯模式之顯示切換正確 | 瀏覽器 CDP 量測 |
+| B10 | 修復 12 項靜默失效、3 處 focus 圈遮蔽 | 實測計算樣式 |
+
+### 10.4 驗收結果（第二階段，2026/10/22 實測）
+
+| # | 結果 | 驗證方式與數據 |
+|---|---|---|
+| B1 | ✅ 通過 | 4 個 HTML 之 `cdn.tailwindcss.com` 命中數為 **0** |
+| B2 | ✅ 通過 | `js/core/tailwind-config.js` 已 `git rm`；全 repo 僅 `css/base.css` 保留一行說明註解 |
+| B3 | ✅ 通過 | 嚴格掃描在 HTML/JS 中未發現真正的 Tailwind 工具類 |
+| B4 | ✅ 通過 | 孤兒 class 掃描：CSS 定義 **399** 個 class、HTML/JS 使用 **335** 個，**0 個孤兒** |
+| B5 | ✅ 通過 | 元件規則一律引用 `var(--color-*)` 等權杖；僅 toast 圖示色以註解標明對應的 amber／emerald 值 |
+| B6 | ✅ 通過 | `tests/smoke.mjs`：**14 案例 / 70 項檢查全數通過** |
+| B7 | ✅ 通過 | `node --check`：`js/core/*.js` 4 檔 + `js/pages/*.js` 4 檔（`store.js`／`seed-data.js`／`file-protocol-guard.js`／`dom.js`／`toast.js`／四頁邏輯）全數通過 |
+| B8 | ✅ 通過 | 詳情頁 `.store-card` 390px、`.menu-column` 562px、菜單卡 116px 高；`.detail-grid` 桌機 `row`／手機 `column`；`.stepper__track` 於 1280px 為 56px（md 斷點值） |
+| B9 | ✅ 通過 | 範圍遮罩 `flex`↔`none`、接單彈窗、訂單摘要（預設 `none`→展開 `flex`）、CMS 面板與編輯 textarea 切換**全部正確** |
+| B10 | ✅ 通過 | 12 項靜默失效改為真實權杖值（陰影／毛玻璃首次生效）；3 個進度節點按鈕移除 `focus:outline-none`，改由 `:focus-visible` 提供可見焦點 |
+
+> **關鍵迴歸修正**：首頁 `#page-detail`、`#modal-call`、`#modal-cms-info`、
+> `#range-mask`、`#detail-cart-badge`、`#cart-warning` 原以 `hidden` **屬性**標記，
+> 但 JS 以 `classList.add/remove('hidden')` 切換 —— 屬性與 class 不一致導致**詳情頁無法顯示**。
+> 此問題**未被以文字為主的測試發現**（DOM 文字仍可讀取），
+> 是由 DOM 幾何量測（元素寬高為 0）才攔截到，現已統一為 `hidden` class。
+
+---
+
+## 11. 變更紀錄
 
 | 日期 | 變更 | 版本 |
 |---|---|---|
 | 2026/10/21 | 建立 PLAN.md，完成現況分析、問題盤點（P1~P4）、目標結構設計與驗收標準 | 1.0.0 |
 | 2026/10/22 | 補上 §7.1 驗收結果（A1~A13 全數通過）；`loadState()` 命名與實作對齊 | 1.0.0 |
+| 2026/10/22 | 新增 §10 第二階段（移除 Tailwind，問題 P5、驗收 B1~B10）；修訂 §6.1／§6.2 載入順序說明 | 2.0.0 |

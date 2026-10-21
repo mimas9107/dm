@@ -1,14 +1,30 @@
 ---
 name: "CLASS-AUDIT.md"
-description: "來電送 CALL & DELIVER — 各頁面 class 屬性分析總整理"
+description: "來電送 CALL & DELIVER — 各頁面 class 屬性分析總整理（Tailwind 時代歷史紀錄）"
 created_date: "2026/10/22"
 modified_date: "2026/10/22"
-project_version: "1.1.0"
+project_version: "2.0.0"
 document_version: "1.0.0"
 agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 ---
 
 # 各頁面 class 屬性分析總整理 (CLASS-AUDIT.md)
+
+> ⚠️ **歷史紀錄（v1.1.0）**
+>
+> 本報告的稽核對象是**已於 v2.0.0 移除的 Tailwind CSS**。
+> 報告中所有 class 名稱、Tailwind 產出統計與靜默失效分析，
+> **皆不再反映目前程式碼的狀態**。
+>
+> - 報告中記載的 **12 項靜默失效** 與 **3 處 focus 圈遮蔽**，
+>   已於 v2.0.0 的 T21 全數修正（見 [TASK.md](./TASK.md) §T21、[CHANGELOG.md](./CHANGELOG.md) `[2.0.0]`）
+> - `tests/class-audit.mjs` 依賴 Tailwind Play CDN 產生樣式表，
+>   在目前版本下**無法重現本報告**，已不納入常規測試流程
+> - 現行樣式架構請見 [README.md](./README.md) 的「樣式架構」章節
+>
+> 保留本文件是為了留下「為什麼要移除 Tailwind」的實證依據。
+
+## 原始說明
 
 > 本文件是**class 使用情形的稽核報告**：有哪些 class、從哪來、跨頁共用了多少、
 > 哪些其實根本沒生效。
@@ -16,7 +32,7 @@ agent_sign: ['human/justin', 'claude/claude-sonnet-4-6']
 > - 重構設計依據：[PLAN.md](./PLAN.md)
 > - 執行步驟與進度：[TASK.md](./TASK.md)
 > - 變更紀錄：[CHANGELOG.md](./CHANGELOG.md)
-> - 重跑本報告：`node tests/class-audit.mjs`
+> - ~~重跑本報告：`node tests/class-audit.mjs`~~（v2.0.0 起無法重現）
 
 ---
 

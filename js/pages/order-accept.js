@@ -161,9 +161,8 @@ function renderOrder() {
     const btn = document.getElementById(`mock-btn-${idx}`);
     if (btn) {
       btn.innerText = o.orderId;
-      btn.className = idx === currentOrderIdx
-        ? 'px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95 cursor-pointer'
-        : 'px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95 cursor-pointer';
+      btn.classList.toggle('is-active', idx === currentOrderIdx);
+      btn.setAttribute('aria-selected', idx === currentOrderIdx ? 'true' : 'false');
     }
   });
 
@@ -181,11 +180,11 @@ function renderOrder() {
     const subtotal = item.qty * item.price;
     totalPrice += subtotal;
     return `
-      <div class="flex items-center justify-between text-base">
-        <span class="font-bold text-stone-800">${escapeHtml(item.name)}</span>
-        <div class="flex items-center gap-3">
-          <span class="text-xs font-bold bg-white border border-stone-200 text-stone-800 px-2 py-0.5 rounded-md">x ${item.qty}</span>
-          <span class="text-xs font-mono font-bold text-stone-600 w-16 text-right">NT$ ${subtotal}</span>
+      <div class="order-item">
+        <span class="order-item__name">${escapeHtml(item.name)}</span>
+        <div class="order-item__meta">
+          <span class="order-item__qty">x ${item.qty}</span>
+          <span class="order-item__subtotal">NT$ ${subtotal}</span>
         </div>
       </div>
     `;
@@ -205,23 +204,22 @@ function renderOrder() {
     const stageNames = ['已接單 • 備餐中', '已製作完成 • 配送中', '已送達完成'];
     const curStep = typeof order.step === 'number' ? order.step : 0;
     badge.innerText = stageNames[curStep] || '已接單 • 備餐中';
-    badge.className = 'text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200';
-    btnAccept.className = 'w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg transition cursor-pointer';
+    badge.className = 'tag tag--success';
+    btnAccept.classList.add('is-accepted');
     btnAcceptText.innerText = '已接受訂單（查看詳情）';
     stageControls.classList.remove('hidden');
 
     [0, 1, 2].forEach(s => {
       const sBtn = document.getElementById(`stage-btn-${s}`);
       if (sBtn) {
-        sBtn.className = s === curStep
-          ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition cursor-pointer'
-          : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-stone-200 text-stone-600 hover:border-brick transition cursor-pointer';
+        sBtn.classList.toggle('is-active', s === curStep);
+        sBtn.setAttribute('aria-pressed', s === curStep ? 'true' : 'false');
       }
     });
   } else {
     badge.innerText = soundOn ? '🔔 待接單 (響鈴提醒中)' : '🔕 待接單 (後台已設靜音)';
-    badge.className = 'text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md border border-red-200/60';
-    btnAccept.className = 'w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition cursor-pointer';
+    badge.className = 'tag tag--brand';
+    btnAccept.classList.remove('is-accepted');
     btnAcceptText.innerText = '接受訂單！';
     stageControls.classList.add('hidden');
   }
@@ -258,12 +256,12 @@ function acceptOrder() {
   const deliverText = formatDeliverBy(order.deliverBy);
 
   $('#modal-accepted-summary').innerHTML = `
-    <div><span class="text-stone-500">訂單編號：</span><b class="text-stone-900">${escapeHtml(order.orderId)} (${escapeHtml(order.storeName)})</b></div>
-    <div><span class="text-stone-500">送達時間：</span><b class="text-brick">${escapeHtml(deliverText)}</b></div>
-    <div><span class="text-stone-500">收件地址：</span><span class="text-stone-900 font-bold">${escapeHtml(order.address)}</span></div>
-    <div><span class="text-stone-500">顧客資訊：</span><span class="text-stone-900 font-bold">${escapeHtml(order.customerName)} (${escapeHtml(order.customerPhone)})</span></div>
-    <div><span class="text-stone-500">餐點明細：</span><span class="text-stone-800">${escapeHtml(itemsText)}</span></div>
-    <div class="pt-1 border-t border-stone-200/80 text-base font-black text-brick">應收金額：NT$ ${totalPrice} (共 ${totalQty} 份)</div>
+    <div><span class="summary-line__label">訂單編號：</span><b class="summary-line__value">${escapeHtml(order.orderId)} (${escapeHtml(order.storeName)})</b></div>
+    <div><span class="summary-line__label">送達時間：</span><b class="summary-line__value summary-line__value--brand">${escapeHtml(deliverText)}</b></div>
+    <div><span class="summary-line__label">收件地址：</span><span class="summary-line__value">${escapeHtml(order.address)}</span></div>
+    <div><span class="summary-line__label">顧客資訊：</span><span class="summary-line__value">${escapeHtml(order.customerName)} (${escapeHtml(order.customerPhone)})</span></div>
+    <div><span class="summary-line__label">餐點明細：</span><span class="summary-line__value">${escapeHtml(itemsText)}</span></div>
+    <div class="summary-line__total">應收金額：NT$ ${totalPrice} (共 ${totalQty} 份)</div>
   `;
 
   $('#modal-accepted').classList.remove('hidden');

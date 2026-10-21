@@ -2,221 +2,199 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>來電送 - 顧客訂單追蹤</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Tailwind 主題設定：必須為傳統 script，詳見 js/core/tailwind-config.js 檔頭說明 -->
-  <script src="./js/core/tailwind-config.js"></script>
-  <!-- Lucide Icons -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="來電送 CALL & DELIVER — 顧客訂單追蹤，即時查看配送進度與訂單明細。">
+  <title>來電送 — 顧客訂單追蹤</title>
+
+  <!-- Lucide 圖示（runtime 將 <i data-lucide> 換成 SVG） -->
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <!-- Google Fonts: Noto Sans TC -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <!-- 樣式：全站共用 + 本頁專屬（link 需置於 Tailwind CDN 之後，以維持既有層疊順序） -->
+
+  <!-- 樣式：全站共用 + 本頁專屬 -->
   <link rel="stylesheet" href="./css/base.css">
   <link rel="stylesheet" href="./css/pages/user-order-track.css">
+
   <!-- file:// 開啟守衛：避免 ES Module 被 CORS 阻擋時無聲失敗 -->
   <script src="./js/core/file-protocol-guard.js"></script>
 </head>
-<body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
+<body>
 
-  <!-- ========================================================= -->
-  <!-- 頁面 4：顧客訂單追蹤頁面 (Screen 4 - 顧客追蹤 RWD 手機/平板適應) -->
-  <!-- ========================================================= -->
-  <div id="page-user-track" class="min-h-screen flex flex-col justify-between pb-10 md:pb-8">
-    
-    <!-- 頂部品牌與頁面導覽列 (嚴格使用：大 text-xl、中 text-base、小 text-xs) -->
-    <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 shadow-xs">
-      <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 min-h-16 md:min-h-20 py-2.5 md:py-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        
-        <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
-        <a href="index.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
-          <img src="./assets/CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
-          <div class="shrink-0 whitespace-nowrap">
-            <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
-            <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">CALL & DELIVER</span>
-          </div>
+  <div id="page-user-track" class="page page--user-track">
+
+    <!-- 頂部品牌與頁面導覽列 -->
+    <header class="app-header">
+      <div class="app-header__inner">
+
+        <!-- 品牌（連結回首頁） -->
+        <a href="index.html" class="app-header__brand">
+          <img src="./assets/CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="app-logo">
+          <span class="brand-lockup">
+            <span class="app-brand">來電送</span>
+            <span class="app-brand__sub">CALL &amp; DELIVER</span>
+          </span>
         </a>
 
-        <!-- 多筆訂單單號切換器 (小螢幕空間不足時自動折至下一行，不切斷) -->
-        <div class="w-full sm:w-auto flex flex-wrap items-center justify-end gap-1.5 md:gap-2 border-t border-stone-100 sm:border-t-0 pt-2 sm:pt-0">
-          <span class="text-xs text-stone-500 font-bold whitespace-nowrap">單號：</span>
-          <div id="user-order-tabs" class="flex flex-wrap items-center gap-1.5 md:gap-2">
+        <!-- 多筆訂單單號切換器 -->
+        <div class="header-group">
+          <span class="header-group__label">單號：</span>
+          <div id="user-order-tabs" class="order-tabs" role="tablist" aria-label="訂單單號切換">
             <!-- 動態渲染單號切換按鈕 -->
           </div>
         </div>
       </div>
     </header>
 
-    <!-- 顧客追蹤主視覺容器 (手機單欄 max-w-xl / 平板與桌面寬版 md:max-w-4xl lg:max-w-5xl) -->
-    <main class="flex-1 max-w-xl md:max-w-4xl lg:max-w-5xl w-full mx-auto px-4 md:px-6 py-5 md:py-8 flex flex-col justify-center">
-      
-      <!-- 頂部副標列 (小 text-xs) -->
-      <div class="flex items-center justify-between mb-2.5 md:mb-3.5 px-1">
-        <h2 class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
-          <i data-lucide="radar" class="w-3.5 h-3.5 text-brick"></i> 訂單即時配送進度 (點擊節點可切換階段)
+    <main class="app-main app-main--top">
+
+      <!-- 頂部副標列 -->
+      <div class="subhead">
+        <h2 class="subhead__title">
+          <i data-lucide="radar" class="icon icon--xs icon--brand"></i> 訂單即時配送進度 (點擊節點可切換階段)
         </h2>
-        <span id="track-stage-badge" class="text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md">
-          店家接單
-        </span>
+        <span id="track-stage-badge" class="tag tag--brand">店家接單</span>
       </div>
 
-      <!-- 顧客追蹤主卡片 (對應手繪稿外框) -->
-      <div class="bg-white rounded-3xl overflow-hidden shadow-xl shadow-stone-200/70 border border-stone-200/80 p-6 sm:p-8 md:p-10 flex flex-col gap-7 md:gap-9">
-        
-        <!-- 當前追蹤的店家與單號提示列 -->
-        <div class="flex items-center justify-between border-b border-stone-100 pb-3.5 -mb-2">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-brick"></span>
-            <span id="active-order-store" class="text-base font-black text-stone-900">禾風堂手作便當</span>
+      <!-- 追蹤主卡片 -->
+      <article class="track-card">
+
+        <!-- 當前追蹤的店家與單號 -->
+        <div class="track-head">
+          <div class="track-head__store">
+            <span class="track-head__dot" aria-hidden="true"></span>
+            <span id="active-order-store" class="track-head__name">禾風堂手作便當</span>
           </div>
-          <span id="track-order-id" class="text-xs font-mono font-bold text-brick bg-brick-light px-3 py-1 rounded-full border border-red-200/60">
-            單號 #101
-          </span>
+          <span id="track-order-id" class="track-head__order-id">單號 #101</span>
         </div>
 
-        <!-- 1. 手繪稿頂部三階段進度條： ◯ ── ◯ ── ◯ (店家接單 / 已製作完成 / 已送達) -->
-        <div class="pt-2 md:pt-3">
-          <div class="relative flex items-center justify-between max-w-2xl mx-auto px-2 sm:px-6">
-            
-            <!-- 背景底線與動態進度填色線 (以第一個與第三個圓心對齊) -->
-            <div class="absolute left-9 right-9 sm:left-13 sm:right-13 md:left-14 md:right-14 top-7 md:top-8 -translate-y-1/2 h-1.5 bg-stone-200 rounded-full z-0 overflow-hidden">
-              <div id="stepper-progress-bar" class="h-full bg-brick rounded-full transition-all duration-500" style="width: 0%;"></div>
+        <!-- 三階段進度條 -->
+        <div class="stepper-wrap">
+          <div class="stepper" role="group" aria-label="配送進度階段">
+
+            <!-- 背景底線與動態進度填色線 -->
+            <div class="stepper__track" aria-hidden="true">
+              <div id="stepper-progress-bar" class="stepper__progress"></div>
             </div>
 
             <!-- 節點 1：店家接單 -->
-            <button data-action="set-track-step" data-step="0" class="relative z-10 flex flex-col items-center gap-2.5 group focus:outline-none cursor-pointer">
-              <div id="step-circle-0" class="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-md">
-                <i data-lucide="clipboard-check" class="w-6 h-6 md:w-7 md:h-7"></i>
-              </div>
-              <span id="step-label-0" class="text-base font-black tracking-tight transition-colors duration-300">
-                店家接單
+            <button type="button" data-action="set-track-step" data-step="0" class="step-node is-current" aria-label="階段 1：店家接單">
+              <span id="step-circle-0" class="step-node__circle">
+                <i data-lucide="clipboard-check" class="icon icon--xl"></i>
               </span>
+              <span id="step-label-0" class="step-node__label">店家接單</span>
             </button>
 
             <!-- 節點 2：已製作完成 -->
-            <button data-action="set-track-step" data-step="1" class="relative z-10 flex flex-col items-center gap-2.5 group focus:outline-none cursor-pointer">
-              <div id="step-circle-1" class="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300">
-                <i data-lucide="utensils-crossed" class="w-6 h-6 md:w-7 md:h-7"></i>
-              </div>
-              <span id="step-label-1" class="text-base font-black tracking-tight transition-colors duration-300">
-                已製作完成
+            <button type="button" data-action="set-track-step" data-step="1" class="step-node" aria-label="階段 2：已製作完成">
+              <span id="step-circle-1" class="step-node__circle">
+                <i data-lucide="utensils-crossed" class="icon icon--xl"></i>
               </span>
+              <span id="step-label-1" class="step-node__label">已製作完成</span>
             </button>
 
             <!-- 節點 3：已送達 -->
-            <button data-action="set-track-step" data-step="2" class="relative z-10 flex flex-col items-center gap-2.5 group focus:outline-none cursor-pointer">
-              <div id="step-circle-2" class="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300">
-                <i data-lucide="package-check" class="w-6 h-6 md:w-7 md:h-7"></i>
-              </div>
-              <span id="step-label-2" class="text-base font-black tracking-tight transition-colors duration-300">
-                已送達
+            <button type="button" data-action="set-track-step" data-step="2" class="step-node" aria-label="階段 3：已送達">
+              <span id="step-circle-2" class="step-node__circle">
+                <i data-lucide="package-check" class="icon icon--xl"></i>
               </span>
+              <span id="step-label-2" class="step-node__label">已送達</span>
             </button>
 
           </div>
         </div>
 
-        <!-- 2. RWD 內容區：手機由上而下單欄 / 平板以上 (md:grid-cols-12) 左右雙欄配置 -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 items-start">
-          
-          <!-- 左欄 (平板占 6/12)：手繪稿中央核心「預計送達時間」與「回首頁」按鈕 -->
-          <div class="md:col-span-6 flex flex-col gap-5">
-            <div class="bg-brick-light/70 border border-red-200/70 rounded-2xl p-6 md:p-8 text-center flex flex-col items-center justify-center gap-2">
-              <div class="flex items-center gap-1.5 text-xs font-bold text-stone-600">
-                <i data-lucide="clock" class="w-4 h-4 text-brick"></i>
+        <!-- 內容雙欄 -->
+        <div class="track-body">
+
+          <!-- 左欄：預計送達時間 + 回首頁 -->
+          <div class="track-col track-col--left">
+            <div class="eta-card">
+              <div class="eta-card__title">
+                <i data-lucide="clock" class="icon icon--sm icon--brand"></i>
                 <span id="eta-title">預計送達時間</span>
               </div>
-              <p id="eta-time" class="text-xl font-black text-brick tracking-tight mt-0.5">
-                12:15 前送達
-              </p>
-              <p id="eta-desc" class="text-xs text-stone-600 mt-0.5">
-                店家已確認您的訂單，正用心準備餐點中
-              </p>
+              <p id="eta-time" class="eta-card__time">12:15 前送達</p>
+              <p id="eta-desc" class="eta-card__desc">店家已確認您的訂單，正用心準備餐點中</p>
             </div>
 
-            <!-- 手繪稿底部按鈕：回首頁 (平板時位於左欄預計送達時間正下方，手機時維持在最底部) -->
-            <div class="hidden md:flex justify-center">
-              <a href="index.html" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
-                <i data-lucide="home" class="w-4 h-4"></i>
+            <div class="home-cta">
+              <a href="index.html" class="btn-home">
+                <i data-lucide="home" class="icon icon--sm"></i>
                 <span>回首頁</span>
               </a>
             </div>
           </div>
 
-          <!-- 右欄 (平板占 6/12)：預設折疊的訂單摘要區塊 (點擊展開/收合) -->
-          <div class="md:col-span-6 flex flex-col gap-5">
-            <div class="border border-stone-200/80 rounded-2xl overflow-hidden bg-stone-50/70">
-              <button data-action="toggle-summary" class="w-full px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between text-xs font-bold text-stone-700 hover:bg-stone-100/80 transition cursor-pointer">
-                <span class="flex items-center gap-2">
-                  <i data-lucide="receipt" class="w-4 h-4 text-brick"></i>
+          <!-- 右欄：訂單摘要折疊 -->
+          <div class="track-col track-col--right">
+            <div class="summary-box">
+              <button type="button" data-action="toggle-summary" class="summary-toggle" aria-controls="order-summary-panel" aria-expanded="false">
+                <span class="summary-toggle__label">
+                  <i data-lucide="receipt" class="icon icon--sm icon--brand"></i>
                   <span>查看本次訂單明細（<span id="summary-store-brief">禾風堂手作便當</span>）</span>
                 </span>
-                <i id="summary-chevron" data-lucide="chevron-down" class="w-4 h-4 text-stone-500 transition-transform duration-300"></i>
+                <i id="summary-chevron" data-lucide="chevron-down" class="icon icon--sm summary-toggle__chevron"></i>
               </button>
 
-              <!-- 折疊內容 (預設 hidden) -->
-              <div id="order-summary-panel" class="hidden px-4 md:px-5 pb-4 md:pb-5 pt-3 border-t border-stone-200/70 text-xs space-y-2.5 bg-white">
-                <div class="flex justify-between gap-2">
-                  <span class="text-stone-500 font-semibold shrink-0">訂購店家</span>
-                  <span id="summary-store-name" class="font-bold text-stone-900 text-right">禾風堂手作便當</span>
+              <!-- 折疊內容（預設隱藏） -->
+              <div id="order-summary-panel" class="summary-panel hidden">
+                <div class="summary-row">
+                  <span class="summary-row__label">訂購店家</span>
+                  <span id="summary-store-name" class="summary-row__value">禾風堂手作便當</span>
                 </div>
-                <div class="flex justify-between gap-2">
-                  <span class="text-stone-500 font-semibold shrink-0">收件地址</span>
-                  <span id="summary-address" class="font-bold text-stone-900 text-right">台北市信義區松高路 11 號 5 樓</span>
+                <div class="summary-row">
+                  <span class="summary-row__label">收件地址</span>
+                  <span id="summary-address" class="summary-row__value">台北市信義區松高路 11 號 5 樓</span>
                 </div>
-                <div class="flex justify-between gap-2">
-                  <span class="text-stone-500 font-semibold shrink-0">收件人</span>
-                  <span id="summary-customer" class="font-bold text-stone-900 text-right">王小明 / 0912-345-678</span>
+                <div class="summary-row">
+                  <span class="summary-row__label">收件人</span>
+                  <span id="summary-customer" class="summary-row__value">王小明 / 0912-345-678</span>
                 </div>
-                <div class="pt-2 border-t border-stone-100">
-                  <span class="text-stone-500 font-semibold block mb-1.5">餐點品項 / 數量</span>
-                  <div id="summary-items-list" class="space-y-1.5 text-stone-800 font-bold">
+                <div class="summary-items">
+                  <span class="summary-items__label">餐點品項 / 數量</span>
+                  <div id="summary-items-list" class="summary-items__list">
                     <!-- 動態渲染餐點 -->
                   </div>
                 </div>
-                <div class="pt-2.5 border-t border-stone-200/80 flex items-center justify-between">
-                  <span class="font-bold text-stone-600">總計金額（免外送費）</span>
-                  <span id="summary-total" class="text-base font-black text-brick font-mono">NT$ 375</span>
+                <div class="summary-total">
+                  <span class="summary-total__label">總計金額（免外送費）</span>
+                  <span id="summary-total" class="summary-total__value">NT$ 375</span>
                 </div>
               </div>
             </div>
 
-            <!-- 手機版底部按鈕：回首頁 (md 以上隱藏，由左欄顯示) -->
-            <div class="pt-1 flex md:hidden justify-center">
-              <a href="index.html" class="w-full sm:w-64 bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-3.5 px-6 rounded-2xl text-base flex items-center justify-center gap-2 shadow-lg shadow-red-950/15 transition">
-                <i data-lucide="home" class="w-4 h-4"></i>
+            <!-- 手機版回首頁（桌機由左欄顯示） -->
+            <div class="home-cta--mobile">
+              <a href="index.html" class="btn-home">
+                <i data-lucide="home" class="icon icon--sm"></i>
                 <span>回首頁</span>
               </a>
             </div>
           </div>
 
         </div>
-
-      </div>
+      </article>
     </main>
 
-    <!-- 頁尾 (小 text-xs)：角色切換小字連結 -->
-    <footer class="w-full text-center py-4 px-4 text-xs text-stone-500 border-t border-stone-200/50 bg-white/50">
-      <div class="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+    <!-- 頁尾 -->
+    <footer class="app-footer app-footer--bar">
+      <nav class="link-row" aria-label="頁面導覽">
         <span>© 來電送 • 準時專送</span>
-        <span class="text-stone-300">|</span>
-        <a href="index.html" class="hover:text-brick hover:underline">顧客首頁</a>
-        <span>·</span>
-        <a href="user_order_track.html" class="text-brick font-bold hover:underline">訂單追蹤</a>
-        <span>·</span>
-        <a href="order_accept.html" class="hover:text-brick hover:underline">店家接單</a>
-        <span>·</span>
-        <a href="controller.html" class="hover:text-brick hover:underline">後台主控台</a>
-      </div>
+        <span class="dot-sep" aria-hidden="true">|</span>
+        <a href="index.html" class="link-inline">顧客首頁</a>
+        <span aria-hidden="true">·</span>
+        <a href="user_order_track.html" class="link-inline link-inline--current">訂單追蹤</a>
+        <span aria-hidden="true">·</span>
+        <a href="order_accept.html" class="link-inline">店家接單</a>
+        <span aria-hidden="true">·</span>
+        <a href="controller.html" class="link-inline">後台主控台</a>
+      </nav>
     </footer>
   </div>
 
-  <!-- ========================================================= -->
-  <!-- JavaScript: 全站共用狀態同步、多筆訂單切換與三階段進度渲染 -->
-  <!-- ========================================================= -->
   <script type="module" src="./js/pages/user-order-track.js"></script>
 </body>
 </html>
