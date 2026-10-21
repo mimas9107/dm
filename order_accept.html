@@ -6,48 +6,19 @@
   <title>來電送 - 店家接單</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind 主題設定：必須為傳統 script，詳見 js/core/tailwind-config.js 檔頭說明 -->
+  <script src="./js/core/tailwind-config.js"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Google Fonts: Noto Sans TC -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brick: {
-              DEFAULT: '#C84B31',
-              dark: '#A53B24',
-              light: '#FDF4F2'
-            }
-          },
-          fontFamily: {
-            sans: ['"Noto Sans TC"', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body {
-      background-color: #F8F6F4;
-      font-family: "Noto Sans TC", sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    /* 手繪稿頂部「你的單來囉！」斜線紋理背景 */
-    .incoming-order-banner {
-      background-color: #C84B31;
-      background-image: repeating-linear-gradient(
-        -45deg,
-        rgba(255, 255, 255, 0.12),
-        rgba(255, 255, 255, 0.12) 12px,
-        transparent 12px,
-        transparent 24px
-      );
-    }
-  </style>
+  <!-- 樣式：全站共用 + 本頁專屬（link 需置於 Tailwind CDN 之後，以維持既有層疊順序） -->
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/pages/order-accept.css">
+  <!-- file:// 開啟守衛：避免 ES Module 被 CORS 阻擋時無聲失敗 -->
+  <script src="./js/core/file-protocol-guard.js"></script>
 </head>
 <body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
 
@@ -62,7 +33,7 @@
         
         <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
         <a href="index.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
-          <img src="CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
+          <img src="./assets/CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
           <div class="shrink-0 whitespace-nowrap">
             <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
             <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">CALL & DELIVER</span>
@@ -72,9 +43,9 @@
         <!-- 訂單單號切換器 (小螢幕空間不足時自動折至下一行，不切斷) -->
         <div class="w-full sm:w-auto flex flex-wrap items-center justify-end gap-1.5 md:gap-2 border-t border-stone-100 sm:border-t-0 pt-2 sm:pt-0">
           <span class="text-xs text-stone-500 font-bold whitespace-nowrap">單號：</span>
-          <button onclick="switchMockOrder(0)" id="mock-btn-0" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95">#101</button>
-          <button onclick="switchMockOrder(1)" id="mock-btn-1" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#102</button>
-          <button onclick="switchMockOrder(2)" id="mock-btn-2" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#103</button>
+          <button data-action="switch-order" data-index="0" id="mock-btn-0" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95">#101</button>
+          <button data-action="switch-order" data-index="1" id="mock-btn-1" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#102</button>
+          <button data-action="switch-order" data-index="2" id="mock-btn-2" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#103</button>
         </div>
       </div>
     </header>
@@ -182,7 +153,7 @@
 
             <!-- 3. 手繪稿底部行動按鈕：「接受訂單！」與接單後進度推進控制 -->
             <div class="pt-1 md:pt-0 space-y-2.5">
-              <button id="btn-accept-order" onclick="acceptOrder()" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 md:py-4.5 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition cursor-pointer">
+              <button id="btn-accept-order" data-action="accept-order" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 md:py-4.5 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition cursor-pointer">
                 <span class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-base font-mono">$</span>
                 <span id="btn-accept-text">接受訂單！</span>
               </button>
@@ -193,9 +164,9 @@
                   <i data-lucide="radar" class="w-3.5 h-3.5 text-brick"></i> 同步顧客端進度：
                 </span>
                 <div class="flex items-center gap-1.5">
-                  <button id="stage-btn-0" onclick="updateOrderStepFromStore(0)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">1. 店家接單</button>
-                  <button id="stage-btn-1" onclick="updateOrderStepFromStore(1)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">2. 已製作完成</button>
-                  <button id="stage-btn-2" onclick="updateOrderStepFromStore(2)" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">3. 已送達</button>
+                  <button id="stage-btn-0" data-action="set-step" data-step="0" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">1. 店家接單</button>
+                  <button id="stage-btn-1" data-action="set-step" data-step="1" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">2. 已製作完成</button>
+                  <button id="stage-btn-2" data-action="set-step" data-step="2" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">3. 已送達</button>
                 </div>
               </div>
             </div>
@@ -240,7 +211,7 @@
       </div>
 
       <div class="flex gap-2.5">
-        <button onclick="closeAcceptedModal()" class="flex-1 py-3 md:py-3.5 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition active:scale-95 cursor-pointer">
+        <button data-action="close-accepted-modal" class="flex-1 py-3 md:py-3.5 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition active:scale-95 cursor-pointer">
           確認，開始備餐
         </button>
         <a href="user_order_track.html" class="py-3 md:py-3.5 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl text-xs flex items-center justify-center gap-1 transition active:scale-95">
@@ -254,399 +225,6 @@
   <!-- ========================================================= -->
   <!-- JavaScript: 全站共用狀態同步、Web Audio 音效與接單管理    -->
   <!-- ========================================================= -->
-  <script>
-    const SHARED_STORAGE_KEY = 'laidiansong_shared_state_v1';
-
-    function getDefaultSharedState() {
-      return {
-        activeOrderId: "#101",
-        stores: [
-          { id: 1, name: "禾風堂手作便當", soundAlert: "叮咚和弦", soundEnabled: true, hours: "10:30 - 13:30", minOrder: "滿 3 份送", minQty: 3, active: true },
-          { id: 2, name: "築地漁火日式定食", soundAlert: "叮咚和弦", soundEnabled: true, hours: "11:00 - 14:00", minOrder: "滿 2 份送", minQty: 2, active: true },
-          { id: 3, name: "青嵐健康水煮餐", soundAlert: "靜音提示", soundEnabled: false, hours: "10:30 - 13:00", minOrder: "滿 2 份送", minQty: 2, active: true }
-        ],
-        customers: [
-          { id: 1, name: "王小明", tel: "0912-345-678", orders: ["#101", "#102", "#103"], abandonedCount: 0, blacklisted: false },
-          { id: 2, name: "林雅婷", tel: "0928-666-888", orders: ["#102"], abandonedCount: 0, blacklisted: false },
-          { id: 3, name: "陳建宏", tel: "0933-111-222", orders: ["#103"], abandonedCount: 1, blacklisted: false },
-          { id: 4, name: "張志豪", tel: "0955-999-000", orders: ["#089", "#094"], abandonedCount: 3, blacklisted: true }
-        ],
-        orders: [
-          {
-            orderId: "#101",
-            storeId: 1,
-            storeName: "禾風堂手作便當",
-            deliverBy: "12:15",
-            address: "台北市信義區松高路 11 號 5 樓",
-            customerName: "王小明",
-            customerPhone: "0912-345-678",
-            accepted: false,
-            step: 0,
-            items: [
-              { name: "秘傳酥炸排骨便當", qty: 2, price: 120 },
-              { name: "蜜汁香烤大雞腿飯", qty: 1, price: 135 }
-            ]
-          },
-          {
-            orderId: "#102",
-            storeId: 2,
-            storeName: "築地漁火日式定食",
-            deliverBy: "12:30",
-            address: "台北市大安區敦化南路一段 188 號 10 樓",
-            customerName: "林雅婷",
-            customerPhone: "0928-666-888",
-            accepted: true,
-            step: 1,
-            items: [
-              { name: "極上炙燒鮭魚腹丼", qty: 2, price: 180 },
-              { name: "和風醬烤鯖魚定食", qty: 2, price: 160 }
-            ]
-          },
-          {
-            orderId: "#103",
-            storeId: 3,
-            storeName: "青嵐健康水煮餐",
-            deliverBy: "12:00",
-            address: "台北市松山區民生東路三段 128 號 3 樓",
-            customerName: "陳建宏",
-            customerPhone: "0933-111-222",
-            accepted: true,
-            step: 2,
-            items: [
-              { name: "義式香草舒肥雞胸餐", qty: 3, price: 130 },
-              { name: "水煮嫩煎板腱牛便當", qty: 1, price: 165 }
-            ]
-          }
-        ],
-        cmsDocs: [
-          { key: "terms", shortLabel: "條款", fullTitle: "服務條款", updatedAt: "2026/10/21 16:30", content: "1. 訂單確認規範：顧客透過「來電送」送出訂單並經電話確認後，店家即刻開始備餐，恕不接受臨時改單或無故棄單。\n2. 棄單黑名單機制：若顧客累計無故棄單或拒收達 2 次（含）以上，系統管理員有權將該電話號碼列為黑名單並取消其訂餐權限。\n3. 準時專送承諾：合作店家均享免外送費門檻優惠，並於指定午餐時段準時送達。" },
-          { key: "support", shortLabel: "客服說明", fullTitle: "客服說明", updatedAt: "2026/10/21 16:35", content: "【來電送客服中心】\n• 服務專線：02-2345-6789\n• 服務時段：週一至週五 09:30 - 18:00\n• 緊急訂單協助：若餐點逾時超過 15 分鐘或品項有誤，請直接撥打店家專線或聯繫線上客服，我們將立即為您追蹤處理。" },
-          { key: "intro", shortLabel: "使用介紹", fullTitle: "使用介紹", updatedAt: "2026/10/21 16:40", content: "歡迎使用「來電送 CALL & DELIVER」午間專送平台：\n步驟 1：於首頁輪播瀏覽今日熱門便當與定食推薦。\n步驟 2：進入店家菜單頁選購餐點（達最低外送份數即享免外送費）。\n步驟 3：點擊「確認來電訂餐」完成撥號確認。\n步驟 4：於「訂單即時配送進度」頁面隨時查看【店家接單 → 已製作完成 → 已送達】三階段狀態。" },
-          { key: "faq", shortLabel: "常用問答", fullTitle: "常用問答 (FAQ)", updatedAt: "2026/10/21 16:45", content: "Q1：請問外送需要運費嗎？\nA1：只要湊滿該店家指定的最低外送份數（例如滿 2 份或 3 份），全面享免外送費！\n\nQ2：為什麼我的帳號無法下單？\nA2：若曾有多次未接電話或棄單紀錄，帳號將被系統列入黑名單停權；如需申訴復權請聯繫客服專線。\n\nQ3：可以同時訂購不同店家的餐點嗎？\nA3：可以！您可以在訂單追蹤頁面透過上方單號（如 #101、#102）切換查看每張訂單的獨立配送進度。" }
-        ]
-      };
-    }
-
-    function loadSharedState() {
-      try {
-        const raw = localStorage.getItem(SHARED_STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && parsed.stores && parsed.customers && parsed.orders) {
-            return parsed;
-          }
-        }
-      } catch (e) {}
-      const def = getDefaultSharedState();
-      saveSharedState(def);
-      return def;
-    }
-
-    function saveSharedState(state) {
-      try {
-        localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(state));
-      } catch (e) {}
-    }
-
-    let sharedState = loadSharedState();
-    let mockOrdersData = sharedState.orders;
-    let currentOrderIdx = 0;
-    let audioCtx = null;
-    let ringTimer = null;
-
-    // 判斷該訂單所屬店家是否在後台開啟音效提醒
-    function isStoreSoundEnabledForOrder(order) {
-      if (!order) return false;
-      const st = sharedState.stores.find(s => s.id === order.storeId || s.name === order.storeName);
-      return st ? st.soundEnabled !== false : true;
-    }
-
-    // 實際排程振盪器發出「叮咚」雙連和弦音列
-    function scheduleChimeNotes(ctx) {
-      const now = ctx.currentTime;
-      const notes = [
-        { freq: 659.25, start: 0.0,  duration: 0.16 }, // E5
-        { freq: 783.99, start: 0.14, duration: 0.16 }, // G5
-        { freq: 1046.50, start: 0.28, duration: 0.42 }, // C6
-        { freq: 659.25, start: 0.80, duration: 0.16 }, // E5
-        { freq: 783.99, start: 0.94, duration: 0.16 }, // G5
-        { freq: 1046.50, start: 1.08, duration: 0.55 }  // C6
-      ];
-
-      notes.forEach(note => {
-        const osc = ctx.createOscillator();
-        const harmonic = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(note.freq, now + note.start);
-
-        harmonic.type = 'triangle';
-        harmonic.frequency.setValueAtTime(note.freq * 2, now + note.start);
-
-        const harmonicGain = ctx.createGain();
-        harmonicGain.gain.setValueAtTime(0.15, now + note.start);
-
-        gain.gain.setValueAtTime(0.001, now + note.start);
-        gain.gain.exponentialRampToValueAtTime(0.35, now + note.start + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + note.start + note.duration);
-
-        osc.connect(gain);
-        harmonic.connect(harmonicGain);
-        harmonicGain.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(now + note.start);
-        harmonic.start(now + note.start);
-        osc.stop(now + note.start + note.duration + 0.02);
-        harmonic.stop(now + note.start + note.duration + 0.02);
-      });
-    }
-
-    function playIncomingOrderChime() {
-      const currentOrder = mockOrdersData[currentOrderIdx];
-      if (!currentOrder || currentOrder.accepted) return;
-      if (!isStoreSoundEnabledForOrder(currentOrder)) return;
-
-      try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return;
-        if (!audioCtx) {
-          audioCtx = new AudioContextClass();
-        }
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume().then(() => {
-            if (audioCtx.state === 'running' && !mockOrdersData[currentOrderIdx].accepted && isStoreSoundEnabledForOrder(mockOrdersData[currentOrderIdx])) {
-              scheduleChimeNotes(audioCtx);
-            }
-          }).catch(() => {});
-          return;
-        }
-        scheduleChimeNotes(audioCtx);
-      } catch (err) {}
-    }
-
-    function syncOrderAlertSound() {
-      stopOrderAlertSound();
-      const order = mockOrdersData[currentOrderIdx];
-      if (order && !order.accepted && isStoreSoundEnabledForOrder(order)) {
-        playIncomingOrderChime();
-        ringTimer = setInterval(() => {
-          const currentOrder = mockOrdersData[currentOrderIdx];
-          if (currentOrder && !currentOrder.accepted && isStoreSoundEnabledForOrder(currentOrder)) {
-            playIncomingOrderChime();
-          } else {
-            stopOrderAlertSound();
-          }
-        }, 4500);
-      }
-    }
-
-    function stopOrderAlertSound() {
-      if (ringTimer) {
-        clearInterval(ringTimer);
-        ringTimer = null;
-      }
-    }
-
-    function syncFromStorage() {
-      sharedState = loadSharedState();
-      mockOrdersData = sharedState.orders;
-      const targetIdx = mockOrdersData.findIndex(o => o.orderId === sharedState.activeOrderId);
-      if (targetIdx !== -1) {
-        currentOrderIdx = targetIdx;
-      } else if (currentOrderIdx >= mockOrdersData.length) {
-        currentOrderIdx = 0;
-      }
-    }
-
-    // 頁面初始化階段 (window.onload)
-    function initOrderPage() {
-      syncFromStorage();
-      renderOrder();
-
-      const initialOrder = mockOrdersData[currentOrderIdx];
-      if (initialOrder && !initialOrder.accepted) {
-        syncOrderAlertSound();
-      } else {
-        stopOrderAlertSound();
-      }
-
-      const unlockEvents = ['pointerdown', 'touchstart', 'mousedown', 'keydown'];
-      const unlockAudio = (e) => {
-        if (e && e.target && e.target.closest && e.target.closest('#btn-accept-order')) {
-          removeUnlockListeners();
-          return;
-        }
-        const currentOrder = mockOrdersData[currentOrderIdx];
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume().then(() => {
-            if (currentOrder && !currentOrder.accepted) {
-              syncOrderAlertSound();
-            }
-          }).catch(() => {});
-        } else if (currentOrder && !currentOrder.accepted) {
-          syncOrderAlertSound();
-        }
-        removeUnlockListeners();
-      };
-
-      const removeUnlockListeners = () => {
-        unlockEvents.forEach(evt => document.removeEventListener(evt, unlockAudio));
-      };
-      unlockEvents.forEach(evt => document.addEventListener(evt, unlockAudio, { passive: true }));
-
-      // 跨分頁即時監聽：當顧客新下單或後台切換店家靜音時，自動更新畫面與鈴聲
-      window.addEventListener('storage', (e) => {
-        if (e.key === SHARED_STORAGE_KEY) {
-          syncFromStorage();
-          renderOrder();
-          syncOrderAlertSound();
-        }
-      });
-    }
-
-    function switchMockOrder(idx) {
-      currentOrderIdx = idx;
-      if (mockOrdersData[idx]) {
-        sharedState.activeOrderId = mockOrdersData[idx].orderId;
-        saveSharedState(sharedState);
-      }
-      renderOrder();
-      syncOrderAlertSound();
-    }
-
-    function renderOrder() {
-      const order = mockOrdersData[currentOrderIdx];
-      if (!order) return;
-
-      mockOrdersData.forEach((o, idx) => {
-        const btn = document.getElementById(`mock-btn-${idx}`);
-        if (btn) {
-          btn.innerText = o.orderId;
-          btn.className = idx === currentOrderIdx
-            ? "px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95 cursor-pointer"
-            : "px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95 cursor-pointer";
-        }
-      });
-
-      document.getElementById('order-store-name').innerText = order.storeName;
-      document.getElementById('order-id').innerText = `單號 ${order.orderId}`;
-      const deliverText = String(order.deliverBy).includes('前送到') ? order.deliverBy : `${order.deliverBy} 前送到`;
-      document.getElementById('order-deliver-by').innerText = deliverText;
-      document.getElementById('order-address').innerText = order.address;
-      document.getElementById('order-customer').innerText = `${order.customerName} / ${order.customerPhone}`;
-      document.getElementById('order-customer-call').href = `tel:${order.customerPhone.replace(/-/g, '')}`;
-
-      let totalQty = 0;
-      let totalPrice = 0;
-      const itemsHtml = order.items.map(item => {
-        totalQty += item.qty;
-        const subtotal = item.qty * item.price;
-        totalPrice += subtotal;
-        return `
-          <div class="flex items-center justify-between text-base">
-            <span class="font-bold text-stone-800">${item.name}</span>
-            <div class="flex items-center gap-3">
-              <span class="text-xs font-bold bg-white border border-stone-200 text-stone-800 px-2 py-0.5 rounded-md">x ${item.qty}</span>
-              <span class="text-xs font-mono font-bold text-stone-600 w-16 text-right">NT$ ${subtotal}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('order-items-list').innerHTML = itemsHtml;
-      document.getElementById('order-total-qty').innerText = `共 ${totalQty} 份`;
-      document.getElementById('order-total-price').innerText = `NT$ ${totalPrice}`;
-
-      const badge = document.getElementById('order-status-badge');
-      const btnAccept = document.getElementById('btn-accept-order');
-      const btnAcceptText = document.getElementById('btn-accept-text');
-      const stageControls = document.getElementById('store-stage-controls');
-
-      const soundOn = isStoreSoundEnabledForOrder(order);
-
-      if (order.accepted) {
-        const stageNames = ["已接單 • 備餐中", "已製作完成 • 配送中", "已送達完成"];
-        const curStep = typeof order.step === 'number' ? order.step : 0;
-        badge.innerText = stageNames[curStep] || "已接單 • 備餐中";
-        badge.className = "text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200";
-        btnAccept.className = "w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg transition cursor-pointer";
-        btnAcceptText.innerText = "已接受訂單（查看詳情）";
-        stageControls.classList.remove('hidden');
-
-        [0, 1, 2].forEach(s => {
-          const sBtn = document.getElementById(`stage-btn-${s}`);
-          if (sBtn) {
-            sBtn.className = s === curStep
-              ? "px-2.5 py-1 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition cursor-pointer"
-              : "px-2.5 py-1 rounded-lg text-xs font-bold bg-white border border-stone-200 text-stone-600 hover:border-brick transition cursor-pointer";
-          }
-        });
-      } else {
-        badge.innerText = soundOn ? "🔔 待接單 (響鈴提醒中)" : "🔕 待接單 (後台已設靜音)";
-        badge.className = "text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md border border-red-200/60";
-        btnAccept.className = "w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition cursor-pointer";
-        btnAcceptText.innerText = "接受訂單！";
-        stageControls.classList.add('hidden');
-      }
-
-      lucide.createIcons();
-    }
-
-    function acceptOrder() {
-      const order = mockOrdersData[currentOrderIdx];
-      order.accepted = true;
-      if (typeof order.step !== 'number') order.step = 0;
-      sharedState.activeOrderId = order.orderId;
-      saveSharedState(sharedState);
-
-      stopOrderAlertSound();
-      renderOrder();
-
-      let totalQty = 0;
-      let totalPrice = 0;
-      const itemsText = order.items.map(i => {
-        totalQty += i.qty;
-        totalPrice += i.qty * i.price;
-        return `${i.name} × ${i.qty}`;
-      }).join('、');
-
-      const deliverText = String(order.deliverBy).includes('前送到') ? order.deliverBy : `${order.deliverBy} 前送到`;
-
-      document.getElementById('modal-accepted-summary').innerHTML = `
-        <div><span class="text-stone-500">訂單編號：</span><b class="text-stone-900">${order.orderId} (${order.storeName})</b></div>
-        <div><span class="text-stone-500">送達時間：</span><b class="text-brick">${deliverText}</b></div>
-        <div><span class="text-stone-500">收件地址：</span><span class="text-stone-900 font-bold">${order.address}</span></div>
-        <div><span class="text-stone-500">顧客資訊：</span><span class="text-stone-900 font-bold">${order.customerName} (${order.customerPhone})</span></div>
-        <div><span class="text-stone-500">餐點明細：</span><span class="text-stone-800">${itemsText}</span></div>
-        <div class="pt-1 border-t border-stone-200/80 text-base font-black text-brick">應收金額：NT$ ${totalPrice} (共 ${totalQty} 份)</div>
-      `;
-
-      document.getElementById('modal-accepted').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    // 店家端直接推進配送階段並同步至顧客追蹤頁
-    function updateOrderStepFromStore(stepIdx) {
-      const order = mockOrdersData[currentOrderIdx];
-      if (!order) return;
-      order.accepted = true;
-      order.step = stepIdx;
-      sharedState.activeOrderId = order.orderId;
-      saveSharedState(sharedState);
-      renderOrder();
-    }
-
-    function closeAcceptedModal() {
-      document.getElementById('modal-accepted').classList.add('hidden');
-    }
-
-    document.getElementById('modal-accepted').addEventListener('click', function(e) {
-      if (e.target === this) closeAcceptedModal();
-    });
-
-    window.onload = initOrderPage;
-  </script>
+  <script type="module" src="./js/pages/order-accept.js"></script>
 </body>
 </html>

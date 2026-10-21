@@ -6,37 +6,19 @@
   <title>來電送 - 後端主控台 Dashboard</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind 主題設定：必須為傳統 script，詳見 js/core/tailwind-config.js 檔頭說明 -->
+  <script src="./js/core/tailwind-config.js"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Google Fonts: Noto Sans TC -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brick: {
-              DEFAULT: '#C84B31',
-              dark: '#A53B24',
-              light: '#FDF4F2'
-            }
-          },
-          fontFamily: {
-            sans: ['"Noto Sans TC"', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body {
-      background-color: #F8F6F4;
-      font-family: "Noto Sans TC", sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-  </style>
+  <!-- 樣式：全站共用 + 本頁專屬（link 需置於 Tailwind CDN 之後，以維持既有層疊順序） -->
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/pages/controller.css">
+  <!-- file:// 開啟守衛：避免 ES Module 被 CORS 阻擋時無聲失敗 -->
+  <script src="./js/core/file-protocol-guard.js"></script>
 </head>
 <body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
 
@@ -51,7 +33,7 @@
         
         <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
         <a href="index.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
-          <img src="CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
+          <img src="./assets/CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
           <div class="shrink-0 whitespace-nowrap">
             <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
             <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">CALL & DELIVER</span>
@@ -100,7 +82,7 @@
             id="tab-btn-stores"
             role="tab"
             aria-selected="true"
-            onclick="switchMainTab('stores')"
+            data-action="switch-tab" data-tab="stores"
             class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer bg-brick text-white shadow-sm"
           >
             <i data-lucide="store" class="w-4 h-4 shrink-0"></i>
@@ -110,7 +92,7 @@
             id="tab-btn-customers"
             role="tab"
             aria-selected="false"
-            onclick="switchMainTab('customers')"
+            data-action="switch-tab" data-tab="customers"
             class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-stone-700 hover:text-stone-900 hover:bg-white/60"
           >
             <i data-lucide="users" class="w-4 h-4 shrink-0"></i>
@@ -120,7 +102,7 @@
             id="tab-btn-cms"
             role="tab"
             aria-selected="false"
-            onclick="switchMainTab('cms')"
+            data-action="switch-tab" data-tab="cms"
             class="flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-stone-700 hover:text-stone-900 hover:bg-white/60"
           >
             <i data-lucide="file-pen-line" class="w-4 h-4 shrink-0"></i>
@@ -299,10 +281,10 @@
                     <h3 id="cms-content-title" class="text-base font-black text-stone-900">服務條款</h3>
                   </div>
                   <div class="flex items-center gap-2">
-                    <button id="btn-cms-cancel" onclick="cancelCmsEdit()" class="hidden px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-200 text-stone-700 hover:bg-stone-300 transition active:scale-95 cursor-pointer">
+                    <button id="btn-cms-cancel" data-action="cms-cancel" class="hidden px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-200 text-stone-700 hover:bg-stone-300 transition active:scale-95 cursor-pointer">
                       取消
                     </button>
-                    <button id="btn-cms-edit" onclick="toggleCmsEdit()" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brick text-white hover:bg-brick-dark shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer">
+                    <button id="btn-cms-edit" data-action="cms-toggle-edit" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brick text-white hover:bg-brick-dark shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer">
                       <i data-lucide="pen-line" class="w-3.5 h-3.5"></i>
                       <span>Edit</span>
                     </button>
@@ -344,7 +326,7 @@
         <span>·</span>
         <a href="controller.html" class="text-brick font-bold hover:underline">後台主控台</a>
         <span class="text-stone-300">|</span>
-        <button onclick="resetSharedPrototypeData()" class="text-stone-400 hover:text-brick underline-offset-2 hover:underline cursor-pointer">重置預設測試資料</button>
+        <button data-action="reset-prototype" class="text-stone-400 hover:text-brick underline-offset-2 hover:underline cursor-pointer">重置預設測試資料</button>
       </div>
     </footer>
   </div>
@@ -352,514 +334,6 @@
   <!-- ========================================================= -->
   <!-- JavaScript: 全站共用狀態同步、店家/顧客黑名單/後台編輯邏輯 -->
   <!-- ========================================================= -->
-  <script>
-    const SHARED_STORAGE_KEY = 'laidiansong_shared_state_v1';
-
-    function getDefaultSharedState() {
-      return {
-        activeOrderId: "#101",
-        stores: [
-          {
-            id: 1,
-            name: "禾風堂手作便當",
-            soundAlert: "叮咚和弦",
-            soundEnabled: true,
-            hours: "10:30 - 13:30",
-            minOrder: "滿 3 份送",
-            minQty: 3,
-            active: true
-          },
-          {
-            id: 2,
-            name: "築地漁火日式定食",
-            soundAlert: "叮咚和弦",
-            soundEnabled: true,
-            hours: "11:00 - 14:00",
-            minOrder: "滿 2 份送",
-            minQty: 2,
-            active: true
-          },
-          {
-            id: 3,
-            name: "青嵐健康水煮餐",
-            soundAlert: "靜音提示",
-            soundEnabled: false,
-            hours: "10:30 - 13:00",
-            minOrder: "滿 2 份送",
-            minQty: 2,
-            active: true
-          }
-        ],
-        customers: [
-          {
-            id: 1,
-            name: "王小明",
-            tel: "0912-345-678",
-            orders: ["#101", "#102", "#103"],
-            abandonedCount: 0,
-            blacklisted: false
-          },
-          {
-            id: 2,
-            name: "林雅婷",
-            tel: "0928-666-888",
-            orders: ["#102"],
-            abandonedCount: 0,
-            blacklisted: false
-          },
-          {
-            id: 3,
-            name: "陳建宏",
-            tel: "0933-111-222",
-            orders: ["#103"],
-            abandonedCount: 1,
-            blacklisted: false
-          },
-          {
-            id: 4,
-            name: "張志豪",
-            tel: "0955-999-000",
-            orders: ["#089", "#094"],
-            abandonedCount: 3,
-            blacklisted: true
-          }
-        ],
-        orders: [
-          {
-            orderId: "#101",
-            storeId: 1,
-            storeName: "禾風堂手作便當",
-            deliverBy: "12:15",
-            address: "台北市信義區松高路 11 號 5 樓",
-            customerName: "王小明",
-            customerPhone: "0912-345-678",
-            accepted: false,
-            step: 0,
-            items: [
-              { name: "秘傳酥炸排骨便當", qty: 2, price: 120 },
-              { name: "蜜汁香烤大雞腿飯", qty: 1, price: 135 }
-            ]
-          },
-          {
-            orderId: "#102",
-            storeId: 2,
-            storeName: "築地漁火日式定食",
-            deliverBy: "12:30",
-            address: "台北市大安區敦化南路一段 188 號 10 樓",
-            customerName: "林雅婷",
-            customerPhone: "0928-666-888",
-            accepted: true,
-            step: 1,
-            items: [
-              { name: "極上炙燒鮭魚腹丼", qty: 2, price: 180 },
-              { name: "和風醬烤鯖魚定食", qty: 2, price: 160 }
-            ]
-          },
-          {
-            orderId: "#103",
-            storeId: 3,
-            storeName: "青嵐健康水煮餐",
-            deliverBy: "12:00",
-            address: "台北市松山區民生東路三段 128 號 3 樓",
-            customerName: "陳建宏",
-            customerPhone: "0933-111-222",
-            accepted: true,
-            step: 2,
-            items: [
-              { name: "義式香草舒肥雞胸餐", qty: 3, price: 130 },
-              { name: "水煮嫩煎板腱牛便當", qty: 1, price: 165 }
-            ]
-          }
-        ],
-        cmsDocs: [
-          {
-            key: "terms",
-            shortLabel: "條款",
-            fullTitle: "服務條款",
-            updatedAt: "2026/10/21 16:30",
-            content: "1. 訂單確認規範：顧客透過「來電送」送出訂單並經電話確認後，店家即刻開始備餐，恕不接受臨時改單或無故棄單。\n2. 棄單黑名單機制：若顧客累計無故棄單或拒收達 2 次（含）以上，系統管理員有權將該電話號碼列為黑名單並取消其訂餐權限。\n3. 準時專送承諾：合作店家均享免外送費門檻優惠，並於指定午餐時段準時送達。"
-          },
-          {
-            key: "support",
-            shortLabel: "客服說明",
-            fullTitle: "客服說明",
-            updatedAt: "2026/10/21 16:35",
-            content: "【來電送客服中心】\n• 服務專線：02-2345-6789\n• 服務時段：週一至週五 09:30 - 18:00\n• 緊急訂單協助：若餐點逾時超過 15 分鐘或品項有誤，請直接撥打店家專線或聯繫線上客服，我們將立即為您追蹤處理。"
-          },
-          {
-            key: "intro",
-            shortLabel: "使用介紹",
-            fullTitle: "使用介紹",
-            updatedAt: "2026/10/21 16:40",
-            content: "歡迎使用「來電送 CALL & DELIVER」午間專送平台：\n步驟 1：於首頁輪播瀏覽今日熱門便當與定食推薦。\n步驟 2：進入店家菜單頁選購餐點（達最低外送份數即享免外送費）。\n步驟 3：點擊「確認來電訂餐」完成撥號確認。\n步驟 4：於「訂單即時配送進度」頁面隨時查看【店家接單 → 已製作完成 → 已送達】三階段狀態。"
-          },
-          {
-            key: "faq",
-            shortLabel: "常用問答",
-            fullTitle: "常用問答 (FAQ)",
-            updatedAt: "2026/10/21 16:45",
-            content: "Q1：請問外送需要運費嗎？\nA1：只要湊滿該店家指定的最低外送份數（例如滿 2 份或 3 份），全面享免外送費！\n\nQ2：為什麼我的帳號無法下單？\nA2：若曾有多次未接電話或棄單紀錄，帳號將被系統列入黑名單停權；如需申訴復權請聯繫客服專線。\n\nQ3：可以同時訂購不同店家的餐點嗎？\nA3：可以！您可以在訂單追蹤頁面透過上方單號（如 #101、#102）切換查看每張訂單的獨立配送進度。"
-          }
-        ]
-      };
-    }
-
-    function loadSharedState() {
-      try {
-        const raw = localStorage.getItem(SHARED_STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && parsed.stores && parsed.customers && parsed.orders && parsed.cmsDocs) {
-            return parsed;
-          }
-        }
-      } catch (e) {}
-      const def = getDefaultSharedState();
-      saveSharedState(def);
-      return def;
-    }
-
-    function saveSharedState(state) {
-      try {
-        localStorage.setItem(SHARED_STORAGE_KEY, JSON.stringify(state));
-      } catch (e) {}
-    }
-
-    let sharedState = loadSharedState();
-    let storesAdminData = sharedState.stores;
-    let customersAdminData = sharedState.customers;
-    let cmsDocsData = sharedState.cmsDocs;
-
-    let currentMainTab = 'stores';
-    let currentCmsIdx = 0;
-    let isEditingCms = false;
-
-    function syncDataRefs() {
-      sharedState = loadSharedState();
-      storesAdminData = sharedState.stores;
-      customersAdminData = sharedState.customers;
-      cmsDocsData = sharedState.cmsDocs;
-    }
-
-    function initController() {
-      syncDataRefs();
-      renderStoresTable();
-      renderCustomersTable();
-      renderCmsNav();
-      renderCmsContent();
-      updateTopStats();
-      switchMainTab('stores');
-      lucide.createIcons();
-
-      // 跨分頁即時監聽：當前台顧客下新訂單時，後台顧客訂單列表自動更新
-      window.addEventListener('storage', (e) => {
-        if (e.key === SHARED_STORAGE_KEY) {
-          syncDataRefs();
-          renderStoresTable();
-          renderCustomersTable();
-          if (!isEditingCms) {
-            renderCmsNav();
-            renderCmsContent();
-          }
-          updateTopStats();
-        }
-      });
-    }
-
-    function resetSharedPrototypeData() {
-      const def = getDefaultSharedState();
-      saveSharedState(def);
-      syncDataRefs();
-      renderStoresTable();
-      renderCustomersTable();
-      renderCmsNav();
-      renderCmsContent();
-      updateTopStats();
-      showToast("已重置全站預設測試資料");
-    }
-
-    // 主控台三大頁籤切換：[店家資料 (stores) | 顧客資料 (customers) | 後台編輯 (cms)]
-    function switchMainTab(tabKey) {
-      currentMainTab = tabKey;
-      const tabs = ['stores', 'customers', 'cms'];
-
-      tabs.forEach(key => {
-        const btn = document.getElementById(`tab-btn-${key}`);
-        const panel = document.getElementById(`tab-panel-${key}`);
-        const isActive = key === tabKey;
-
-        if (btn) {
-          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-          btn.className = isActive
-            ? "flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer bg-brick text-white shadow-sm"
-            : "flex-1 md:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-stone-700 hover:text-stone-900 hover:bg-white/60";
-        }
-
-        if (panel) {
-          if (isActive) {
-            panel.classList.remove('hidden');
-          } else {
-            panel.classList.add('hidden');
-          }
-        }
-      });
-
-      lucide.createIcons();
-    }
-
-    // 更新頂部與側欄統計數據
-    function updateTopStats() {
-      const totalStores = storesAdminData.length;
-      const activeStores = storesAdminData.filter(s => s.active).length;
-      const suspendedStores = totalStores - activeStores;
-
-      document.getElementById('stat-store-count').innerText = totalStores;
-      document.getElementById('panel-store-badge').innerText = `啟用中 ${activeStores} / ${totalStores}`;
-      document.getElementById('sidebar-store-total').innerText = totalStores;
-      document.getElementById('sidebar-store-active').innerText = activeStores;
-      document.getElementById('sidebar-store-suspended').innerText = suspendedStores;
-
-      const totalCust = customersAdminData.length;
-      const blacklistedCust = customersAdminData.filter(c => c.blacklisted).length;
-      const normalCust = totalCust - blacklistedCust;
-
-      document.getElementById('stat-customer-count').innerText = totalCust;
-      document.getElementById('stat-blacklist-count').innerText = blacklistedCust;
-      document.getElementById('panel-customer-badge').innerText = `共 ${totalCust} 位顧客`;
-      document.getElementById('sidebar-cust-normal').innerText = normalCust;
-      document.getElementById('sidebar-cust-blacklisted').innerText = blacklistedCust;
-    }
-
-    // ================= 1. 渲染店家資料表格 =================
-    function renderStoresTable() {
-      const tbody = document.getElementById('store-table-body');
-      tbody.innerHTML = storesAdminData.map((store, idx) => {
-        const soundBtnClass = store.soundEnabled
-          ? "bg-brick-light text-brick border-red-200/80"
-          : "bg-stone-100 text-stone-500 border-stone-200";
-        const soundLabel = store.soundEnabled ? "🔔 叮咚開啟" : "🔕 靜音";
-
-        const authBtnClass = store.active
-          ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
-          : "bg-stone-200 text-stone-600 border-stone-300 hover:bg-stone-300";
-        const authLabel = store.active ? "正常接單" : "已停權";
-
-        return `
-          <tr class="${store.active ? '' : 'opacity-60 bg-stone-50'}">
-            <td class="py-3 pr-2 align-top">
-              <div class="font-black text-stone-900">${store.name}</div>
-              <button onclick="toggleStoreSound(${idx})" class="mt-1 px-2 py-0.5 rounded-md border text-xs font-bold transition active:scale-95 cursor-pointer ${soundBtnClass}">
-                ${soundLabel}
-              </button>
-            </td>
-            <td class="py-3 px-2 align-top font-mono font-bold text-stone-700 whitespace-nowrap">
-              ${store.hours}
-            </td>
-            <td class="py-3 px-2 align-top">
-              <span class="bg-stone-100 text-stone-700 px-2 py-0.5 rounded font-bold whitespace-nowrap">${store.minOrder}</span>
-            </td>
-            <td class="py-3 pl-2 align-top text-right whitespace-nowrap">
-              <button onclick="toggleStoreActive(${idx})" class="px-2.5 py-1 rounded-lg border text-xs font-bold transition active:scale-95 cursor-pointer ${authBtnClass}">
-                ${authLabel}
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-      lucide.createIcons();
-    }
-
-    function toggleStoreSound(idx) {
-      storesAdminData[idx].soundEnabled = !storesAdminData[idx].soundEnabled;
-      saveSharedState(sharedState);
-      renderStoresTable();
-      showToast(`已將「${storesAdminData[idx].name}」通知音效設為${storesAdminData[idx].soundEnabled ? '開啟' : '靜音'}（已同步店家接單頁）`);
-    }
-
-    function toggleStoreActive(idx) {
-      storesAdminData[idx].active = !storesAdminData[idx].active;
-      saveSharedState(sharedState);
-      renderStoresTable();
-      updateTopStats();
-      showToast(`已將「${storesAdminData[idx].name}」權限改為${storesAdminData[idx].active ? '正常接單' : '停權狀態'}（已同步前台首頁）`);
-    }
-
-    // ================= 2. 渲染顧客資料表格 (含棄單紀錄與黑名單權限切換) =================
-    function renderCustomersTable() {
-      const tbody = document.getElementById('customer-table-body');
-      tbody.innerHTML = customersAdminData.map((cust, idx) => {
-        const abandonBadge = cust.abandonedCount > 0
-          ? `<span class="text-red-600 font-bold">棄單 ${cust.abandonedCount} 次</span>`
-          : `<span class="text-stone-400">無棄單</span>`;
-
-        const statusBtnClass = cust.blacklisted
-          ? "bg-red-600 hover:bg-red-700 text-white border-red-700 shadow-xs"
-          : "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200";
-        const statusLabel = cust.blacklisted ? "🚫 黑名單 (解除)" : "✓ 正常 (設黑名單)";
-
-        const orderLinks = cust.orders.map(ordId => {
-          return `<button onclick="jumpToOrder('${ordId}')" class="underline-offset-2 hover:underline cursor-pointer">${ordId}</button>`;
-        }).join(', ');
-
-        return `
-          <tr class="${cust.blacklisted ? 'bg-red-50/50' : ''}">
-            <td class="py-3 pr-2 align-top">
-              <div class="font-black ${cust.blacklisted ? 'text-red-700 line-through' : 'text-stone-900'}">${cust.name}</div>
-              <span class="text-xs font-bold ${cust.blacklisted ? 'text-red-600' : 'text-emerald-700'}">
-                ${cust.blacklisted ? '已禁止訂餐' : '權限正常'}
-              </span>
-            </td>
-            <td class="py-3 px-2 align-top font-mono font-bold text-stone-700 whitespace-nowrap">
-              ${cust.tel}
-            </td>
-            <td class="py-3 px-2 align-top">
-              <div class="font-mono font-bold text-brick">${orderLinks}</div>
-              <div class="mt-0.5 flex items-center gap-1.5">
-                ${abandonBadge}
-                <button onclick="recordAbandon(${idx})" class="px-1.5 py-0.5 rounded bg-stone-100 hover:bg-stone-200 text-stone-600 text-xs font-bold cursor-pointer" title="記錄一次棄單">+棄單</button>
-              </div>
-            </td>
-            <td class="py-3 pl-2 align-top text-right whitespace-nowrap">
-              <button onclick="toggleCustomerBlacklist(${idx})" class="px-2.5 py-1 rounded-lg border text-xs font-bold transition active:scale-95 cursor-pointer ${statusBtnClass}">
-                ${statusLabel}
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-      lucide.createIcons();
-    }
-
-    function jumpToOrder(orderId) {
-      sharedState.activeOrderId = orderId;
-      saveSharedState(sharedState);
-      window.location.href = 'user_order_track.html';
-    }
-
-    function recordAbandon(idx) {
-      const cust = customersAdminData[idx];
-      cust.abandonedCount = (cust.abandonedCount || 0) + 1;
-      if (cust.abandonedCount >= 2 && !cust.blacklisted) {
-        cust.blacklisted = true;
-        showToast(`顧客「${cust.name}」累計棄單達 ${cust.abandonedCount} 次，已自動列入黑名單停權`);
-      } else {
-        showToast(`已記錄顧客「${cust.name}」棄單 1 次（累計 ${cust.abandonedCount} 次）`);
-      }
-      saveSharedState(sharedState);
-      renderCustomersTable();
-      updateTopStats();
-    }
-
-    function toggleCustomerBlacklist(idx) {
-      const cust = customersAdminData[idx];
-      cust.blacklisted = !cust.blacklisted;
-      saveSharedState(sharedState);
-      renderCustomersTable();
-      updateTopStats();
-      if (cust.blacklisted) {
-        showToast(`已將顧客「${cust.name}」列入黑名單，前台已禁止其使用訂餐權限`);
-      } else {
-        showToast(`已解除顧客「${cust.name}」的黑名單限制，恢復正常訂餐權限`);
-      }
-    }
-
-    // ================= 3. 渲染後台編輯區 (條款 / 客服說明 / 使用介紹 / 常用問答) =================
-    function renderCmsNav() {
-      const nav = document.getElementById('cms-nav-list');
-      nav.innerHTML = cmsDocsData.map((doc, idx) => {
-        const isActive = idx === currentCmsIdx;
-        const btnClass = isActive
-          ? "px-3 py-2.5 rounded-xl text-xs font-black bg-brick text-white shadow-xs transition cursor-pointer text-left whitespace-nowrap"
-          : "px-3 py-2.5 rounded-xl text-xs font-bold text-stone-700 hover:bg-stone-200/70 transition cursor-pointer text-left whitespace-nowrap";
-        return `
-          <button onclick="switchCmsDoc(${idx})" class="${btnClass}">
-            ${doc.shortLabel}
-          </button>
-        `;
-      }).join('');
-    }
-
-    function switchCmsDoc(idx) {
-      if (isEditingCms) {
-        isEditingCms = false;
-      }
-      currentCmsIdx = idx;
-      renderCmsNav();
-      renderCmsContent();
-    }
-
-    function renderCmsContent() {
-      const doc = cmsDocsData[currentCmsIdx];
-      document.getElementById('cms-active-label').innerText = doc.shortLabel;
-      document.getElementById('cms-content-title').innerText = doc.fullTitle;
-      document.getElementById('cms-view-box').innerText = doc.content;
-      document.getElementById('cms-edit-textarea').value = doc.content;
-      document.getElementById('cms-updated-at').innerText = `最後更新：${doc.updatedAt}`;
-
-      const viewBox = document.getElementById('cms-view-box');
-      const editBox = document.getElementById('cms-edit-textarea');
-      const btnEdit = document.getElementById('btn-cms-edit');
-      const btnCancel = document.getElementById('btn-cms-cancel');
-      const modeHint = document.getElementById('cms-mode-hint');
-
-      if (isEditingCms) {
-        viewBox.classList.add('hidden');
-        editBox.classList.remove('hidden');
-        btnCancel.classList.remove('hidden');
-        btnEdit.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>儲存</span>`;
-        btnEdit.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer";
-        modeHint.innerText = "編輯模式中";
-        modeHint.className = "font-bold text-brick";
-        editBox.focus();
-      } else {
-        viewBox.classList.remove('hidden');
-        editBox.classList.add('hidden');
-        btnCancel.classList.add('hidden');
-        btnEdit.innerHTML = `<i data-lucide="pen-line" class="w-3.5 h-3.5"></i><span>Edit</span>`;
-        btnEdit.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-brick text-white hover:bg-brick-dark shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer";
-        modeHint.innerText = "檢視模式";
-        modeHint.className = "font-bold text-stone-500";
-      }
-      lucide.createIcons();
-    }
-
-    function toggleCmsEdit() {
-      const doc = cmsDocsData[currentCmsIdx];
-      if (!isEditingCms) {
-        isEditingCms = true;
-        renderCmsContent();
-      } else {
-        const newVal = document.getElementById('cms-edit-textarea').value.trim();
-        doc.content = newVal || doc.content;
-        const now = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        doc.updatedAt = `${now.getFullYear()}/${pad(now.getMonth() + 1)}/${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-        isEditingCms = false;
-        saveSharedState(sharedState);
-        renderCmsContent();
-        showToast(`已儲存「${doc.fullTitle}」修改內容並同步至前台首頁`);
-      }
-    }
-
-    function cancelCmsEdit() {
-      isEditingCms = false;
-      renderCmsContent();
-    }
-
-    // 輕量操作提示 Toast
-    function showToast(msg) {
-      const toast = document.createElement('div');
-      toast.className = "fixed bottom-6 right-6 z-50 bg-stone-900/95 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 transition-all duration-300";
-      toast.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0"></i><span>${msg}</span>`;
-      document.body.appendChild(toast);
-      lucide.createIcons();
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-2');
-        setTimeout(() => toast.remove(), 300);
-      }, 2200);
-    }
-
-    window.onload = initController;
-  </script>
+  <script type="module" src="./js/pages/controller.js"></script>
 </body>
 </html>
