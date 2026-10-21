@@ -52,62 +52,38 @@
 <body class="text-stone-800 antialiased min-h-screen flex flex-col justify-between selection:bg-red-100 selection:text-brick">
 
   <!-- ========================================================= -->
-  <!-- 頁面 3：店家接單頁面 (Screen 3 - 店家接單)                -->
+  <!-- 頁面 3：店家接單頁面 (Screen 3 - 店家接單 RWD 手機/平板適應) -->
   <!-- ========================================================= -->
-  <div id="page-order-accept" class="min-h-screen flex flex-col justify-between pb-24">
+  <div id="page-order-accept" class="min-h-screen flex flex-col justify-between pb-10 md:pb-8">
     
     <!-- 頂部品牌與頁面導覽列 (嚴格使用：大 text-xl、中 text-base、小 text-xs) -->
     <header class="w-full bg-white/95 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 shadow-xs">
-      <div class="max-w-xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="max-w-xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 min-h-16 md:min-h-20 py-2.5 md:py-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         
-        <!-- 品牌專屬向量 Logo -->
-        <a href="code_artifact.html" class="flex items-center gap-2.5 cursor-pointer select-none">
-          <div class="w-11 h-11 rounded-2xl bg-brick p-1.5 flex items-center justify-center shadow-md shadow-red-950/15 shrink-0">
-            <svg viewBox="0 0 100 100" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 38 18 
-                       L 24 38 
-                       L 34 38 
-                       L 20 62 
-                       C 22 74, 34 76, 44 75 
-                       L 68 75 
-                       L 68 67 
-                       L 82 77 
-                       L 68 87 
-                       L 68 79 
-                       C 42 79, 14 77, 12 58 
-                       L 24 34 
-                       L 16 34 
-                       Z" 
-                    fill="#FFFFFF" />
-              <path d="M 44 26 L 49 32" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
-              <path d="M 68 25 L 63 32" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
-              <path d="M 40 38 L 72 38" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
-              <path d="M 36 49 L 77 49" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
-              <path d="M 56 49 Q 53 62 42 68" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
-              <path d="M 57 51 Q 63 60 74 67" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div>
+        <!-- 品牌專屬向量 Logo (統一使用 CoDeliver-logo-1020x1020px-20261021.svg，鎖定 shrink-0 whitespace-nowrap 防換行) -->
+        <a href="code_artifact.html" class="flex items-center gap-2.5 cursor-pointer select-none shrink-0">
+          <img src="CoDeliver-logo-1020x1020px-20261021.svg" alt="來電送 Logo" class="w-11 h-11 md:w-12 md:h-12 rounded-2xl object-contain shrink-0">
+          <div class="shrink-0 whitespace-nowrap">
             <span class="text-xl font-black tracking-tight text-brick leading-none block">來電送</span>
-            <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">店家接單中心</span>
+            <span class="text-xs text-stone-500 font-bold tracking-wider block mt-0.5">CALL & DELIVER</span>
           </div>
         </a>
 
-        <!-- 模擬訂單切換器 (Mock Data Sets 切換測試) -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-xs text-stone-500 font-bold">模擬單號：</span>
-          <button onclick="switchMockOrder(0)" id="mock-btn-0" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95">#101</button>
-          <button onclick="switchMockOrder(1)" id="mock-btn-1" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#102</button>
-          <button onclick="switchMockOrder(2)" id="mock-btn-2" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#103</button>
+        <!-- 訂單單號切換器 (小螢幕空間不足時自動折至下一行，不切斷) -->
+        <div class="w-full sm:w-auto flex flex-wrap items-center justify-end gap-1.5 md:gap-2 border-t border-stone-100 sm:border-t-0 pt-2 sm:pt-0">
+          <span class="text-xs text-stone-500 font-bold whitespace-nowrap">單號：</span>
+          <button onclick="switchMockOrder(0)" id="mock-btn-0" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95">#101</button>
+          <button onclick="switchMockOrder(1)" id="mock-btn-1" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#102</button>
+          <button onclick="switchMockOrder(2)" id="mock-btn-2" class="px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95">#103</button>
         </div>
       </div>
     </header>
 
-    <!-- 店家接單主視覺容器 -->
-    <main class="flex-1 max-w-xl w-full mx-auto px-4 py-5 flex flex-col justify-center">
+    <!-- 店家接單主視覺容器 (手機單欄 max-w-xl / 平板與桌面寬版雙欄看板 md:max-w-4xl lg:max-w-5xl) -->
+    <main class="flex-1 max-w-xl md:max-w-4xl lg:max-w-5xl w-full mx-auto px-4 md:px-6 py-5 md:py-8 flex flex-col justify-center">
       
       <!-- 頂部副標列 (小 text-xs) -->
-      <div class="flex items-center justify-between mb-2.5 px-1">
+      <div class="flex items-center justify-between mb-2.5 md:mb-3.5 px-1">
         <h2 class="text-xs font-bold text-stone-600 flex items-center gap-1.5">
           <i data-lucide="bell-ring" class="w-3.5 h-3.5 text-brick"></i> 店家接單通知
         </h2>
@@ -119,89 +95,101 @@
       <!-- 接單卡片本體 (對應手繪稿外框) -->
       <div class="bg-white rounded-3xl overflow-hidden shadow-xl shadow-stone-200/70 border border-stone-200/80 flex flex-col">
         
-        <!-- 1. 手繪稿頂部橫幅：「你的單來囉！」 -->
-        <div class="incoming-order-banner px-6 py-7 text-white text-center relative overflow-hidden border-b border-red-900/10">
-          <div class="inline-flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-3 py-1 rounded-full text-xs font-bold mb-2">
+        <!-- 1. 手繪稿頂部橫幅：「你的單來囉！」 (手機置中 / 平板橫向寬幅排布) -->
+        <div class="incoming-order-banner px-6 py-7 md:px-8 md:py-6 text-white text-center md:text-left relative overflow-hidden border-b border-red-900/10 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <div class="flex items-center justify-center md:justify-start gap-2 order-2 md:order-1">
+            <i data-lucide="flame" class="w-6 h-6 shrink-0"></i>
+            <h1 class="text-xl font-black tracking-wide drop-shadow-sm">你的單來囉！</h1>
+          </div>
+          <div class="inline-flex items-center justify-center gap-1.5 bg-black/20 backdrop-blur-xs px-3.5 py-1.5 rounded-full text-xs font-bold self-center md:self-auto order-1 md:order-2">
             <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
             <span id="order-store-name">禾風堂手作便當</span>
             <span>•</span>
             <span id="order-id" class="font-mono">單號 #101</span>
           </div>
-          <h1 class="text-xl font-black tracking-wide drop-shadow-sm flex items-center justify-center gap-2">
-            <i data-lucide="flame" class="w-6 h-6"></i>
-            <span>你的單來囉！</span>
-          </h1>
         </div>
 
-        <!-- 2. 手繪稿四大核心項目列表 -->
-        <div class="p-5 space-y-4">
+        <!-- 2. RWD 內容區：手機由上而下單欄 / 平板以上 (md:grid-cols-12) 左右雙欄看板 -->
+        <div class="p-5 md:p-7 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-stretch">
           
-          <!-- 項目一：幾點前送到 -->
-          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-brick-light/70 border border-red-200/60">
-            <div class="w-10 h-10 rounded-xl bg-brick text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-              <i data-lucide="clock" class="w-5 h-5"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <span class="text-xs font-bold text-stone-500 block">幾點前送到</span>
-              <p id="order-deliver-by" class="text-xl font-black text-brick mt-0.5"></p>
-            </div>
-          </div>
-
-          <!-- 項目二：收件地址 -->
-          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70">
-            <div class="w-10 h-10 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
-              <i data-lucide="map-pin" class="w-5 h-5 text-brick"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <span class="text-xs font-bold text-stone-500 block">收件地址</span>
-              <p id="order-address" class="text-base font-black text-stone-900 mt-0.5 leading-snug"></p>
-            </div>
-          </div>
-
-          <!-- 項目三：品項 / 數量 -->
-          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70">
-            <div class="w-10 h-10 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
-              <i data-lucide="utensils" class="w-5 h-5 text-brick"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-stone-500">品項 / 數量</span>
-                <span id="order-total-qty" class="text-xs font-bold text-brick bg-brick-light px-2 py-0.5 rounded-md"></span>
+          <!-- 左欄 (平板占 5/12)：配送時間、收件地址、顧客名/電話 -->
+          <div class="md:col-span-5 flex flex-col gap-4 justify-between">
+            
+            <!-- 項目一：幾點前送到 -->
+            <div class="flex items-start gap-3.5 p-3.5 md:p-4 rounded-2xl bg-brick-light/70 border border-red-200/60">
+              <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-brick text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                <i data-lucide="clock" class="w-5 h-5"></i>
               </div>
-              <div id="order-items-list" class="mt-2 space-y-2 border-t border-stone-200/80 pt-2">
-                <!-- 動態渲染品項與數量 -->
-              </div>
-              <div class="mt-3 pt-2.5 border-t border-stone-200/80 flex items-center justify-between">
-                <span class="text-xs font-bold text-stone-600">應收總計（免外送費）</span>
-                <span id="order-total-price" class="text-xl font-black text-brick font-mono"></span>
+              <div class="flex-1 min-w-0">
+                <span class="text-xs font-bold text-stone-500 block">幾點前送到</span>
+                <p id="order-deliver-by" class="text-xl font-black text-brick mt-0.5"></p>
               </div>
             </div>
-          </div>
 
-          <!-- 項目四：顧客名 / 電話 -->
-          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-stone-50 border border-stone-200/70">
-            <div class="w-10 h-10 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
-              <i data-lucide="user-check" class="w-5 h-5 text-brick"></i>
-            </div>
-            <div class="flex-1 min-w-0 flex items-center justify-between gap-2">
-              <div>
-                <span class="text-xs font-bold text-stone-500 block">顧客名 / 電話</span>
-                <p id="order-customer" class="text-base font-black text-stone-900 mt-0.5"></p>
+            <!-- 項目二：收件地址 -->
+            <div class="flex items-start gap-3.5 p-3.5 md:p-4 rounded-2xl bg-stone-50 border border-stone-200/70 flex-1">
+              <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="map-pin" class="w-5 h-5 text-brick"></i>
               </div>
-              <a id="order-customer-call" href="#" class="px-3 py-2 rounded-xl bg-white border border-stone-200 text-brick text-xs font-bold flex items-center gap-1.5 shadow-xs hover:border-brick transition active:scale-95 shrink-0">
-                <i data-lucide="phone" class="w-3.5 h-3.5"></i> 聯絡顧客
-              </a>
+              <div class="flex-1 min-w-0">
+                <span class="text-xs font-bold text-stone-500 block">收件地址</span>
+                <p id="order-address" class="text-base font-black text-stone-900 mt-0.5 leading-snug"></p>
+              </div>
             </div>
+
+            <!-- 項目四 (在平板左欄底部、手機透過 order 排在品項之後)：顧客名 / 電話 -->
+            <div class="flex items-start gap-3.5 p-3.5 md:p-4 rounded-2xl bg-stone-50 border border-stone-200/70 order-last md:order-none">
+              <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="user-check" class="w-5 h-5 text-brick"></i>
+              </div>
+              <div class="flex-1 min-w-0 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <span class="text-xs font-bold text-stone-500 block">顧客名 / 電話</span>
+                  <p id="order-customer" class="text-base font-black text-stone-900 mt-0.5 truncate"></p>
+                </div>
+                <a id="order-customer-call" href="#" class="px-3 py-2 rounded-xl bg-white border border-stone-200 text-brick text-xs font-bold flex items-center gap-1.5 shadow-xs hover:border-brick transition active:scale-95 shrink-0">
+                  <i data-lucide="phone" class="w-3.5 h-3.5"></i> 聯絡顧客
+                </a>
+              </div>
+            </div>
+
           </div>
 
-        </div>
+          <!-- 右欄 (平板占 7/12)：品項/數量明細 + 應收總計 + 底部「接受訂單！」大按鈕 -->
+          <div class="md:col-span-7 flex flex-col justify-between gap-4">
+            
+            <!-- 項目三：品項 / 數量 -->
+            <div class="flex items-start gap-3.5 p-3.5 md:p-5 rounded-2xl bg-stone-50 border border-stone-200/70 flex-1">
+              <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-stone-200/80 text-stone-700 flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="utensils" class="w-5 h-5 text-brick"></i>
+              </div>
+              <div class="flex-1 min-w-0 flex flex-col justify-between h-full">
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-stone-500">品項 / 數量</span>
+                    <span id="order-total-qty" class="text-xs font-bold text-brick bg-brick-light px-2.5 py-0.5 rounded-md"></span>
+                  </div>
+                  <div id="order-items-list" class="mt-2.5 space-y-2.5 border-t border-stone-200/80 pt-3">
+                    <!-- 動態渲染品項與數量 -->
+                  </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-stone-200/80 flex items-center justify-between">
+                  <span class="text-xs font-bold text-stone-600">應收總計（免外送費）</span>
+                  <span id="order-total-price" class="text-xl font-black text-brick font-mono"></span>
+                </div>
+              </div>
+            </div>
 
-        <!-- 3. 手繪稿底部行動按鈕：「接受訂單！」 -->
-        <div class="px-5 pb-5 pt-1">
-          <button id="btn-accept-order" onclick="acceptOrder()" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition">
-            <span class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-base font-mono">$</span>
-            <span id="btn-accept-text">接受訂單！</span>
-          </button>
+            <!-- 3. 手繪稿底部行動按鈕：「接受訂單！」 -->
+            <div class="pt-1 md:pt-0">
+              <button id="btn-accept-order" onclick="acceptOrder()" class="w-full bg-brick hover:bg-brick-dark active:scale-[0.98] text-white font-black py-4 md:py-4.5 px-6 rounded-full text-xl flex items-center justify-center gap-2.5 shadow-lg shadow-red-950/20 transition">
+                <span class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-base font-mono">$</span>
+                <span id="btn-accept-text">接受訂單！</span>
+              </button>
+            </div>
+
+          </div>
+
         </div>
 
       </div>
@@ -214,10 +202,10 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- 已接單回饋畫面彈窗 (Modal)                                -->
+  <!-- 已接單回饋畫面彈窗 (Modal - 支援手機與平板寬度)           -->
   <!-- ========================================================= -->
   <div id="modal-accepted" class="fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative">
+    <div class="bg-white rounded-3xl max-w-sm md:max-w-md w-full p-6 md:p-7 text-center shadow-2xl relative">
       <div class="w-14 h-14 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-xs">
         <i data-lucide="check-circle-2" class="w-8 h-8"></i>
       </div>
@@ -225,18 +213,18 @@
       <p class="text-xs text-stone-600 mt-1">請開始準備餐點，並於指定時間前送達</p>
 
       <!-- 接單摘要區塊 -->
-      <div id="modal-accepted-summary" class="text-xs text-stone-700 my-4 leading-relaxed bg-stone-50 p-3.5 rounded-2xl border border-stone-200/80 text-left space-y-1.5">
+      <div id="modal-accepted-summary" class="text-xs text-stone-700 my-4 leading-relaxed bg-stone-50 p-3.5 md:p-4 rounded-2xl border border-stone-200/80 text-left space-y-1.5">
         <!-- 動態填入接單摘要 -->
       </div>
 
-      <button onclick="closeAcceptedModal()" class="w-full py-3 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition active:scale-95">
+      <button onclick="closeAcceptedModal()" class="w-full py-3 md:py-3.5 bg-brick hover:bg-brick-dark text-white font-bold rounded-xl text-base shadow-md transition active:scale-95">
         確認，開始備餐
       </button>
     </div>
   </div>
 
   <!-- ========================================================= -->
-  <!-- JavaScript: Mock Data Sets 與接單狀態管理                 -->
+  <!-- JavaScript: Mock Data Sets、Web Audio 音效與接單狀態管理  -->
   <!-- ========================================================= -->
   <script>
     // Mock Data Sets (預設第一筆為王小明 / 0912-345-678、台北市信義區松高路 11 號 5 樓、12:15 前送到)
@@ -283,26 +271,156 @@
     ];
 
     let currentOrderIdx = 0;
+    let audioCtx = null;
+    let ringTimer = null;
 
+    // 實際排程振盪器發出「叮咚」雙連和弦音列
+    function scheduleChimeNotes(ctx) {
+      const now = ctx.currentTime;
+      // 清脆響亮的雙連「叮咚」和弦音列 (E5 -> G5 -> C6 接 E5 -> G5 -> C6)
+      const notes = [
+        { freq: 659.25, start: 0.0,  duration: 0.16 }, // E5
+        { freq: 783.99, start: 0.14, duration: 0.16 }, // G5
+        { freq: 1046.50, start: 0.28, duration: 0.42 }, // C6
+        { freq: 659.25, start: 0.80, duration: 0.16 }, // E5
+        { freq: 783.99, start: 0.94, duration: 0.16 }, // G5
+        { freq: 1046.50, start: 1.08, duration: 0.55 }  // C6
+      ];
+
+      notes.forEach(note => {
+        const osc = ctx.createOscillator();
+        const harmonic = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // 主音正弦波 + 泛音三角波合成清脆鐘聲質感
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.freq, now + note.start);
+
+        harmonic.type = 'triangle';
+        harmonic.frequency.setValueAtTime(note.freq * 2, now + note.start);
+
+        const harmonicGain = ctx.createGain();
+        harmonicGain.gain.setValueAtTime(0.15, now + note.start);
+
+        gain.gain.setValueAtTime(0.001, now + note.start);
+        gain.gain.exponentialRampToValueAtTime(0.35, now + note.start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + note.start + note.duration);
+
+        osc.connect(gain);
+        harmonic.connect(harmonicGain);
+        harmonicGain.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + note.start);
+        harmonic.start(now + note.start);
+        osc.stop(now + note.start + note.duration + 0.02);
+        harmonic.stop(now + note.start + note.duration + 0.02);
+      });
+    }
+
+    // 瀏覽器原生 Web Audio API 播放提示鈴聲（自動檢查訂單是否已接單 + 處理 suspended 狀態）
+    function playIncomingOrderChime() {
+      const currentOrder = mockOrdersData[currentOrderIdx];
+      if (!currentOrder || currentOrder.accepted) return;
+
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) {
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().then(() => {
+            if (audioCtx.state === 'running' && !mockOrdersData[currentOrderIdx].accepted) {
+              scheduleChimeNotes(audioCtx);
+            }
+          }).catch(() => {});
+          return;
+        }
+        scheduleChimeNotes(audioCtx);
+      } catch (err) {
+        // 忽略瀏覽器未解鎖音效前的限制錯誤
+      }
+    }
+
+    // 管理未接單音效提醒：判斷當前訂單是否已接單 (order.accepted)，未接單才啟動循環鈴聲，已接單則立即靜音
+    function syncOrderAlertSound() {
+      stopOrderAlertSound();
+      const order = mockOrdersData[currentOrderIdx];
+      if (order && !order.accepted) {
+        playIncomingOrderChime();
+        ringTimer = setInterval(() => {
+          const currentOrder = mockOrdersData[currentOrderIdx];
+          if (currentOrder && !currentOrder.accepted) {
+            playIncomingOrderChime();
+          } else {
+            stopOrderAlertSound();
+          }
+        }, 4500);
+      }
+    }
+
+    function stopOrderAlertSound() {
+      if (ringTimer) {
+        clearInterval(ringTimer);
+        ringTimer = null;
+      }
+    }
+
+    // 頁面初始化階段 (window.onload)：先判斷當前訂單是否已接單，決定是否播放音效與掛載互動喚醒
     function initOrderPage() {
       renderOrder();
+
+      const initialOrder = mockOrdersData[currentOrderIdx];
+      if (initialOrder && !initialOrder.accepted) {
+        syncOrderAlertSound();
+      } else {
+        stopOrderAlertSound();
+      }
+
+      // 做法 A：若瀏覽器因 Autoplay 策略暫停 AudioContext，一旦偵測到使用者首次互動且當前訂單尚未接單，即刻喚醒並播放鈴聲
+      const unlockEvents = ['pointerdown', 'touchstart', 'mousedown', 'keydown'];
+      const unlockAudio = (e) => {
+        // 若點擊的是「接受訂單」按鈕本身，交由 acceptOrder() 處理停止音效，不觸發喚醒響鈴
+        if (e && e.target && e.target.closest && e.target.closest('#btn-accept-order')) {
+          removeUnlockListeners();
+          return;
+        }
+        const currentOrder = mockOrdersData[currentOrderIdx];
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume().then(() => {
+            if (currentOrder && !currentOrder.accepted) {
+              syncOrderAlertSound();
+            }
+          }).catch(() => {});
+        } else if (currentOrder && !currentOrder.accepted) {
+          syncOrderAlertSound();
+        }
+        removeUnlockListeners();
+      };
+
+      const removeUnlockListeners = () => {
+        unlockEvents.forEach(evt => document.removeEventListener(evt, unlockAudio));
+      };
+      unlockEvents.forEach(evt => document.addEventListener(evt, unlockAudio, { passive: true }));
     }
 
     function switchMockOrder(idx) {
       currentOrderIdx = idx;
       renderOrder();
+      syncOrderAlertSound();
     }
 
     function renderOrder() {
       const order = mockOrdersData[currentOrderIdx];
 
-      // 更新頂部模擬單號切換按鈕樣式
+      // 更新頂部單號切換按鈕樣式
       mockOrdersData.forEach((_, idx) => {
         const btn = document.getElementById(`mock-btn-${idx}`);
         if (btn) {
           btn.className = idx === currentOrderIdx
-            ? "px-2.5 py-1 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95"
-            : "px-2.5 py-1 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95";
+            ? "px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-brick text-white shadow-xs transition active:scale-95"
+            : "px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-600 hover:bg-stone-200 transition active:scale-95";
         }
       });
 
@@ -359,6 +477,7 @@
     function acceptOrder() {
       const order = mockOrdersData[currentOrderIdx];
       order.accepted = true;
+      stopOrderAlertSound();
       renderOrder();
 
       let totalQty = 0;
